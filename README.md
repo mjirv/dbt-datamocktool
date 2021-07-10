@@ -7,7 +7,10 @@ Using dmt, you can create mock CSV seeds to stand in for the sources and refs th
 and test that the model produces the desired output (using another CSV seed).
 
 ## Quickstart
-1. Install this package following the guide in the [dbt documentation](https://docs.getdbt.com/docs/building-a-dbt-project/package-management).
+1. Install this package by adding the following to your `packages.yml` file:
+    * ```yaml
+        - git: git@github.com:mjirv/dbt-datamocktool.git
+          revision: [">=0.0.4"]
 2. Create your mock CSVs: sample inputs for your models and the expected outputs of those models given the inputs.
     * Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
     * See the `integration_tests/data/` directory of this project for some examples
