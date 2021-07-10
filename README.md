@@ -9,9 +9,9 @@ and test that the model produces the desired output (using another CSV seed).
 ## Quickstart
 1. Install this package following the guide in the [dbt documentation](https://docs.getdbt.com/docs/building-a-dbt-project/package-management).
 2. Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
-  * This variable defines the _inputs_ to your unit tests. It tells dmt which seeds to replace `ref()` and `source()` blocks with in your models. (You will define the outputs later, in `schema.yml`)
-  * Follow the example below.
-  * ```yaml
+    * This variable defines the _inputs_ to your unit tests. It tells dmt which seeds to replace `ref()` and `source()` blocks with in your models. (You will define the outputs later, in `schema.yml`)
+    * Follow the example below.
+    * ```yaml
         vars:
           dmt_mappings:
             test_suite_1: # dmt allows you to define multiple test suites so that you can define multiple tests for the same model
@@ -31,7 +31,7 @@ and test that the model produces the desired output (using another CSV seed).
                 stg_payments: dmt__stg_payments_2
                 stg_orders: dbt__stg_orders_2```
 3. Add unit tests to your `schema.yml` files, using the following example: 
-  * ```yaml
+    * ```yaml
         - name: stg_payments
           tests:
             - dbt_datamocktool.unit_test:
