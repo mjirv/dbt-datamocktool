@@ -9,7 +9,7 @@ and test that the model produces the desired output (using another CSV seed).
 ## Quickstart
 1. Install this package following the guide in the [dbt documentation](https://docs.getdbt.com/docs/building-a-dbt-project/package-management).
 2. Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
-    * This variable defines the _inputs_ to your unit tests. It tells dmt which seeds to use as inputs (You will define the outputs later, in `schema.yml`).
+    * This variable tells dmt which seeds to use as mock inputs for your unit tests (You will define the outputs later, in `schema.yml`).
     * Follow the example below.
     * ```yaml
         vars:
