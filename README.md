@@ -29,7 +29,7 @@ and test that the model produces the desired output (using another CSV seed).
                   orders: dbt__raw_orders_2
               models:
                 stg_payments: dmt__stg_payments_2
-                stg_orders: dbt__stg_orders_2```
+                stg_orders: dbt__stg_orders_2
 3. Add unit tests to your `schema.yml` files, using the following example: 
     * ```yaml
         - name: stg_payments
@@ -41,7 +41,7 @@ and test that the model produces the desired output (using another CSV seed).
                 expected_output: ref('dmt__expected_stg_payments_2')
                 tags: ['dmt_test_suite_2']
           columns:
-            ...```
+            ...
 4. Create CSVs for the input and output seeds you referenced above, and put them in your seed directory (typically `data/`).
     * See the `integration_tests/data/` folder in this project for some examples
 5. To run tests, run the following (replacing `dmt_test_suite_1` with your test suite name): 
