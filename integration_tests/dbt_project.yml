@@ -28,6 +28,6 @@ vars:
       refs:
         raw_orders: dmt__raw_orders_1
       sources:
-        jaffle_shosp:
+        jaffle_shop:
           raw_customers: dmt__raw_customers_1
 
