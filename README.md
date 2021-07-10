@@ -8,8 +8,11 @@ and test that the model produces the desired output (using another CSV seed).
 
 ## Quickstart
 1. Install this package following the guide in the [dbt documentation](https://docs.getdbt.com/docs/building-a-dbt-project/package-management).
-2. Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
-    * This variable tells dmt which seeds to use as mock inputs for your unit tests (You will define the outputs later, in `schema.yml`).
+2. Create your mocks: CSVs with sample inputs for your models and the expected outputs of those models given the inputs.
+    * Save them to your seeds directory (usually `data/`)
+    * See the `integration_tests/data/` directory of this project for some examples
+3. Map your inputs: Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
+    * This variable tells dmt which refs/sources to replace with which seeds when running unit tests
     * Follow the example below.
     * ```yaml
         vars:
@@ -30,7 +33,7 @@ and test that the model produces the desired output (using another CSV seed).
               models:
                 stg_payments: dmt__stg_payments_2
                 stg_orders: dbt__stg_orders_2
-3. Add unit tests to your `schema.yml` files, using the following example: 
+4. Define your tests: Add unit tests to your `schema.yml` files, using the following example: 
     * ```yaml
         - name: stg_payments
           tests:
@@ -42,9 +45,7 @@ and test that the model produces the desired output (using another CSV seed).
                 tags: ['test_suite_2']
           columns:
             ...
-4. Create CSVs for the input and output seeds you referenced above, and put them in your seed directory (typically `data/`).
-    * See the `integration_tests/data/` folder in this project for some examples
-5. To run tests, run the following (replacing `test_suite_1` with your test suite name): 
+5. Run your tests: Run the following commands (replacing `test_suite_1` with your test suite name): 
     * `dbt seed`
     * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: test_suite_1"`
     * `dbt test -m tag:test_suite_1`
