@@ -1,0 +1,44 @@
+version: 2
+
+sources:
+  - name: jaffle_shop
+    tables:
+      - name: raw_customers
+
+models:
+  - name: stg_customers
+    tests:
+      - dbt_datamocktool.unit_test:
+          expected_output: ref('dmt__expected_stg_customers_1')
+          tags: test_suite_1
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_orders
+    tests:
+      - dbt_datamocktool.unit_test:
+          expected_output: ref('dmt__expected_stg_orders_1')
+          tags: test_suite_1
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['placed', 'shipped', 'completed', 'return_pending', 'returned']
+
+  - name: stg_payments
+    columns:
+      - name: payment_id
+        tests:
+          - unique
+          - not_null
+      - name: payment_method
+        tests:
+          - accepted_values:
+              values: ['credit_card', 'coupon', 'bank_transfer', 'gift_card']

@@ -1,0 +1,33 @@
+
+name: 'jaffle_shop'
+version: '0.1'
+profile: 'datamocktool'
+config-version: 2
+
+source-paths: ["models"]
+analysis-paths: ["analysis"]
+test-paths: ["tests"]
+data-paths: ["data"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+    - "target"
+    - "dbt_modules"
+    - "logs"
+
+models:
+  jaffle_shop:
+      materialized: table
+      staging:
+        materialized: view
+
+vars:
+  dmt_mappings:
+    test_suite_1:
+      refs:
+        raw_orders: dmt__raw_orders_1
+      sources:
+        jaffle_shosp:
+          raw_customers: dmt__raw_customers_1
+
