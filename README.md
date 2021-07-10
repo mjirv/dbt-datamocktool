@@ -9,7 +9,7 @@ and test that the model produces the desired output (using another CSV seed).
 ## Quickstart
 1. Install this package following the guide in the [dbt documentation](https://docs.getdbt.com/docs/building-a-dbt-project/package-management).
 2. Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
-    * This variable defines the _inputs_ to your unit tests. It tells dmt which seeds to replace `ref()` and `source()` blocks with in your models. (You will define the outputs later, in `schema.yml`)
+    * This variable defines the _inputs_ to your unit tests. It tells dmt which seeds to use as inputs (You will define the outputs later, in `schema.yml`).
     * Follow the example below.
     * ```yaml
         vars:
@@ -42,7 +42,8 @@ and test that the model produces the desired output (using another CSV seed).
                 tags: ['dmt_test_suite_2']
           columns:
             ...```
-4. Add the input and expected output seeds you referenced above to your `seeds` directory.
+4. Add the input and expected output seeds you referenced above to your seed directory (typically `data/`).
+    * See the `integration_tests/data/` folder in this project for some examples
 5. To run tests, run the following (replacing `dmt_test_suite_1` with your test suite name): 
     * `dbt seed`
     * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: dmt_test_suite_1"`
