@@ -46,8 +46,6 @@ and test that the model produces the desired output (using another CSV seed).
     * See the `integration_tests/data/` folder in this project for some examples
 5. To run tests, run the following (replacing `dmt_test_suite_1` with your test suite name): 
     * `dbt seed`
-    * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: dmt_test_suite_1"` (the `dmt_test_suite` variable tells dbt which set of seeds to use)
-    * `dbt test -m tag:dmt_test_suite_1` (the tag tells dbt which tests to run)
-    * Note that the mocks are only used to build models when running `dbt run` with a `dmt_test_suite` variable provided.
-    This ensures that dmt does not conflict with your regular dbt runs.
+    * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: dmt_test_suite_1"`
+    * `dbt test -m tag:dmt_test_suite_1`
         
