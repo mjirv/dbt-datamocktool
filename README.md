@@ -42,7 +42,7 @@ and test that the model produces the desired output (using another CSV seed).
                 tags: ['dmt_test_suite_2']
           columns:
             ...```
-4. Add the input and expected output seeds you referenced above to your seed directory (typically `data/`).
+4. Create CSVs for the input and output seeds you referenced above, and put them in your seed directory (typically `data/`).
     * See the `integration_tests/data/` folder in this project for some examples
 5. To run tests, run the following (replacing `dmt_test_suite_1` with your test suite name): 
     * `dbt seed`
