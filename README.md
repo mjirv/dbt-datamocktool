@@ -38,7 +38,7 @@ and test that the model produces the desired output (using another CSV seed).
         - name: stg_payments
           tests:
             - dbt_datamocktool.unit_test:
-                expected_output: ref('dmt__expected_stg_payments_1') # this should be a CSV of the expected output in your `seeds` directory
+                expected_output: ref('dmt__expected_stg_payments_1') # this is a seed
                 tags: ['test_suite_1']
             - dbt_datamocktool.unit_test:
                 expected_output: ref('dmt__expected_stg_payments_2')
