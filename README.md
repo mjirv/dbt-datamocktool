@@ -8,8 +8,8 @@ and test that the model produces the desired output (using another CSV seed).
 
 ## Quickstart
 1. Install this package following the guide in the [dbt documentation](https://docs.getdbt.com/docs/building-a-dbt-project/package-management).
-2. Create your mocks: CSVs with sample inputs for your models and the expected outputs of those models given the inputs.
-    * Save them to your seeds directory (usually `data/`)
+2. Create your mock CSVs: sample inputs for your models and the expected outputs of those models given the inputs.
+    * Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
     * See the `integration_tests/data/` directory of this project for some examples
 3. Map your inputs: Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
     * This variable tells dmt which refs/sources to replace with which seeds when running unit tests
