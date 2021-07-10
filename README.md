@@ -36,16 +36,16 @@ and test that the model produces the desired output (using another CSV seed).
           tests:
             - dbt_datamocktool.unit_test:
                 expected_output: ref('dmt__expected_stg_payments_1') # this should be a CSV of the expected output in your `seeds` directory
-                tags: ['dmt_test_suite_1']
+                tags: ['test_suite_1']
             - dbt_datamocktool.unit_test:
                 expected_output: ref('dmt__expected_stg_payments_2')
-                tags: ['dmt_test_suite_2']
+                tags: ['test_suite_2']
           columns:
             ...
 4. Create CSVs for the input and output seeds you referenced above, and put them in your seed directory (typically `data/`).
     * See the `integration_tests/data/` folder in this project for some examples
-5. To run tests, run the following (replacing `dmt_test_suite_1` with your test suite name): 
+5. To run tests, run the following (replacing `test_suite_1` with your test suite name): 
     * `dbt seed`
-    * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: dmt_test_suite_1"`
-    * `dbt test -m tag:dmt_test_suite_1`
+    * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: test_suite_1"`
+    * `dbt test -m tag:test_suite_1`
         
