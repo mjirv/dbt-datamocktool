@@ -1,5 +1,4 @@
 {% macro source(source_name, table_name) %}
-    {% do log(var('dmt_mappings'), info=True) %}
     {% if var('dmt_test_suite', '') != '' %}
         {% set mapping_dict = var('dmt_mappings')[var('dmt_test_suite')]['sources'] %}
         {% if source_name in mapping_dict %}
