@@ -9,15 +9,15 @@ and test that the model produces the desired output (using another CSV seed).
 ## Quickstart
 1. Install this package following the guide in the [dbt documentation](https://docs.getdbt.com/docs/building-a-dbt-project/package-management).
 2. Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
-  * This variable tells dmt which seeds to replace `ref()` and `source()` blocks with in your models.
-  * Follow the example below. Note the structure: Test Suite > refs/sources > schema name (for sources) > table/model name. The dictionary keys should be names of refs and sources in your project, and the values should be the _input_ seeds you want to use in your tests.
+  * This variable defines the _inputs_ to your unit tests. It tells dmt which seeds to replace `ref()` and `source()` blocks with in your models. (You will define the outputs later, in `schema.yml`)
+  * Follow the example below.
   * ```yaml
         vars:
           dmt_mappings:
-            test_suite_1:
+            test_suite_1: # dmt allows you to define multiple test suites so that you can define multiple tests for the same model
               sources:
                 raw:
-                  customers: dmt__raw_customers_1
+                  customers: dmt__raw_customers_1 # source('raw', 'customers') becomes ref('dmt__raw_customers_1')
                   orders: dbt__raw_orders_1
               models:
                 stg_payments: dmt__stg_payments_1
@@ -29,8 +29,8 @@ and test that the model produces the desired output (using another CSV seed).
                   orders: dbt__raw_orders_2
               models:
                 stg_payments: dmt__stg_payments_2
-                stg_orders: dbt__stg_orders_2
-3. Add `dmt.unit_test` tests to your `schema.yml` files, using the following example: 
+                stg_orders: dbt__stg_orders_2```
+3. Add unit tests to your `schema.yml` files, using the following example: 
   * ```yaml
         - name: stg_payments
           tests:
@@ -43,6 +43,10 @@ and test that the model produces the desired output (using another CSV seed).
           columns:
             ...```
 4. Add the input and expected output seeds you referenced above to your `seeds` directory.
-5. To run tests, run `dbt seed && dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: your_test_suite_name" && dbt test -m tag:your_test_suite_name
-
+5. To run tests, run the following (replacing `dmt_test_suite_1` with your test suite name): 
+    * `dbt seed`
+    * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: dmt_test_suite_1"`
+    * `dbt test -m tag:dmt_test_suite_1` 
+    * Note that the mocks are only used to build models when running `dbt run` with a `dmt_test_suite` variable provided.
+    This ensures that dmt does not conflict with your regular dbt runs.
         
