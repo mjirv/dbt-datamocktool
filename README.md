@@ -29,7 +29,7 @@ and test that the model produces the desired output (using another CSV seed).
                   orders: dbt__raw_orders_2
               models:
                 stg_payments: dmt__stg_payments_2
-                stg_orders: dbt__stg_orders_2 ```
+                stg_orders: dbt__stg_orders_2
   4. Add `dmt.unit_test` tests to your `schema.yml` files, using the following example:
     ```yaml
         - name: stg_payments
