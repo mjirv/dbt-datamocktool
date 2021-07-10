@@ -22,6 +22,8 @@ and test that the model produces the desired output (using another CSV seed).
                 raw:
                   customers: dmt__raw_customers_1 # source('raw', 'customers') becomes ref('dmt__raw_customers_1')
                   orders: dbt__raw_orders_1
+                snowplow:
+                  events: dmt__raw_events_1 # source('snowplow', 'events') becomes ref('dmt__raw_events_1')
               models:
                 stg_payments: dmt__stg_payments_1 # ref('stg_payments') becomes ref('dmt__stg_payments_1')
                 stg_orders: dbt__stg_orders_1
