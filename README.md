@@ -24,7 +24,7 @@ and test that the model produces the desired output (using another CSV seed).
                   orders: dbt__raw_orders_1
                 snowplow:
                   events: dmt__raw_events_1 # source('snowplow', 'events') becomes ref('dmt__raw_events_1')
-              models:
+              refs:
                 stg_payments: dmt__stg_payments_1 # ref('stg_payments') becomes ref('dmt__stg_payments_1')
                 stg_orders: dbt__stg_orders_1
             test_suite_2:
@@ -32,7 +32,7 @@ and test that the model produces the desired output (using another CSV seed).
                 raw:
                   customers: dmt__raw_customers_2
                   orders: dbt__raw_orders_2
-              models:
+              refs:
                 stg_payments: dmt__stg_payments_2
                 stg_orders: dbt__stg_orders_2
 4. Define your tests: Add unit tests to your `schema.yml` files, using the following example: 
@@ -47,6 +47,17 @@ and test that the model produces the desired output (using another CSV seed).
                 tags: ['test_suite_2']
           columns:
             ...
+5. Use dmt's `ref()` and `source()` functions. You have two options:
+    1. Replace `ref()` and `source()` in the models you want to test with `dbt_datamocktool.ref()` and `dbt_datamocktool.source()` respectively; OR
+    2. Add the following macros to your project:
+        * ```sql
+            {% macro ref(model) %}
+                {% do return(dbt_datamocktool.ref(model)) %}
+            {% endmacro %}
+        *  ```sql
+            {% macro source(model) %}
+                {% do return(dbt_datamocktool.source(model)) %}
+            {% endmacro %}
 5. Run your tests: Run the following commands (replacing `test_suite_1` with your test suite name): 
     * `dbt seed`
     * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: test_suite_1"`
