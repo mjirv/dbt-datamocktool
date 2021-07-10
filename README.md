@@ -7,7 +7,7 @@ Using dmt, you can create mock CSV seeds to stand in for the sources and refs th
 and test that the model produces the desired output (using another CSV seed).
 
 ## Quickstart
-1. Install this package following the guide in the (https://docs.getdbt.com/docs/building-a-dbt-project/package-management)[dbt docs]
+1. Install this package following the guide in the [https://docs.getdbt.com/docs/building-a-dbt-project/package-management](dbt docs)
 2. Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
   1. This variable tells dmt which seeds to replace `ref()` and `source()` blocks with in your models.
   2. Follow the example below. Note the structure: Test Suite > refs/sources > schema name (for sources) > table/model name. The dictionary keys should be names of refs and sources in your project, and the values should be the _input_ seeds you want to use in your tests.
