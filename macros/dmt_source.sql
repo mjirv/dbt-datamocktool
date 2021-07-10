@@ -1,12 +1,12 @@
-{% macro source(schema_name, source_name) %}
+{% macro source(source_name, table_name) %}
     {% if var('dmt_test_suite', '') != '' %}
         {% set mapping_dict = var('dmt_mappings')[var('dmt_test_suite')]['sources'] %}
-        {% if schema_name in mapping_dict %}
-            {% if model_name in mapping_dict[schema_name] %}
-                {% do return(builtins.ref(mapping_dict[schema_name][source_name])) %}
+        {% if source_name in mapping_dict %}
+            {% if table_name in mapping_dict[source_name] %}
+                {% do return(builtins.ref(mapping_dict[source_name][table_name])) %}
             {% endif %}
         {% endif %}
     {% endif %}
 
-    {% do return(builtins.source(schema_name, source_name)) %}
+    {% do return(builtins.source(source_name, table_name)) %}
 {% endmacro %}
