@@ -62,7 +62,7 @@ and test that the model produces the desired output (using another CSV seed).
                 {% do return(dbt_datamocktool.source(model)) %}
             {% endmacro %}
 5. Run your tests: Run the following commands (replacing `test_suite_1` with your test suite name): 
-    * `dbt seed`
-    * `dbt run -m <YOUR MODELS TO TEST> --vars "dmt_test_suite: test_suite_1"`
+    * `dbt seed --select +tag:test_suite_1`
+    * `dbt run -m +tag:test_suite_1 --vars "dmt_test_suite: test_suite_1"`
     * `dbt test -m tag:test_suite_1`
         
