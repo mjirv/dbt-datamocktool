@@ -9,8 +9,9 @@ models:
   - name: stg_customers
     tests:
       - dbt_datamocktool.unit_test:
+          input_mapping:
+            source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
           expected_output: ref('dmt__expected_stg_customers_1')
-          tags: test_suite_1
     columns:
       - name: customer_id
         tests:
@@ -20,8 +21,9 @@ models:
   - name: stg_orders
     tests:
       - dbt_datamocktool.unit_test:
+          input_mapping:
+            ref('raw_orders'): ref('dmt__raw_orders_1')
           expected_output: ref('dmt__expected_stg_orders_1')
-          tags: test_suite_1
     columns:
       - name: order_id
         tests:

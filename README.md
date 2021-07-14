@@ -10,59 +10,28 @@ and test that the model produces the desired output (using another CSV seed).
 1. Install this package by adding the following to your `packages.yml` file:
     * ```yaml
         - git: git@github.com:mjirv/dbt-datamocktool.git
-          revision: 0.0.4-beta
+          revision: 0.1.0-beta
 2. Create your mock CSVs: sample inputs for your models and the expected outputs of those models given the inputs.
     * Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
     * See the `integration_tests/data/` directory of this project for some examples
-3. Map your inputs: Add a variable called `dmt_mappings` to your `dbt_project.yml`. 
-    * This variable tells dmt which refs/sources to replace with which seeds when running unit tests
-    * Follow the example below.
+3. Define your tests: Add unit tests to your `schema.yml` files, using the following example: 
     * ```yaml
-        vars:
-          dmt_mappings:
-            test_suite_1: # dmt allows you to define multiple test suites so that you can define multiple tests for the same model
-              sources:
-                raw:
-                  customers: dmt__raw_customers_1 # source('raw', 'customers') becomes ref('dmt__raw_customers_1')
-                  orders: dbt__raw_orders_1
-                snowplow:
-                  events: dmt__raw_events_1 # source('snowplow', 'events') becomes ref('dmt__raw_events_1')
-              refs:
-                stg_payments: dmt__stg_payments_1 # ref('stg_payments') becomes ref('dmt__stg_payments_1')
-                stg_orders: dbt__stg_orders_1
-            test_suite_2:
-              sources:
-                raw:
-                  customers: dmt__raw_customers_2
-                  orders: dbt__raw_orders_2
-              refs:
-                stg_payments: dmt__stg_payments_2
-                stg_orders: dbt__stg_orders_2
-4. Define your tests: Add unit tests to your `schema.yml` files, using the following example: 
-    * ```yaml
-        - name: stg_payments
+        models:
+        - name: stg_customers
           tests:
             - dbt_datamocktool.unit_test:
-                expected_output: ref('dmt__expected_stg_payments_1') # this is a seed
-                tags: ['test_suite_1']
-            - dbt_datamocktool.unit_test:
-                expected_output: ref('dmt__expected_stg_payments_2')
-                tags: ['test_suite_2']
+                input_mapping:
+                  source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
+                expected_output: ref('dmt__expected_stg_customers_1')
           columns:
             ...
-5. Use dmt's `ref()` and `source()` functions. You have two options:
-    1. Replace `ref()` and `source()` in the models you want to test with `dbt_datamocktool.ref()` and `dbt_datamocktool.source()` respectively; OR
-    2. Add the following macros to your project:
-        * ```sql
-            {% macro ref(model) %}
-                {% do return(dbt_datamocktool.ref(model)) %}
-            {% endmacro %}
-        *  ```sql
-            {% macro source(model) %}
-                {% do return(dbt_datamocktool.source(model)) %}
-            {% endmacro %}
-5. Run your tests: Run the following commands (replacing `test_suite_1` with your test suite name): 
-    * `dbt seed --select +tag:test_suite_1`
-    * `dbt run -m +tag:test_suite_1 --vars "dmt_test_suite: test_suite_1"`
-    * `dbt test -m tag:test_suite_1`
-        
+
+        - name: stg_orders
+          tests:
+            - dbt_datamocktool.unit_test:
+                input_mapping:
+                  ref('raw_orders'): ref('dmt__raw_orders_1')
+                expected_output: ref('dmt__expected_stg_orders_1')
+          columns:
+            ...
+4. Run your tests: `dbt deps && dbt seed && dbt test`
