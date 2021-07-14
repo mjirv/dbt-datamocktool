@@ -35,4 +35,3 @@ and test that the model produces the desired output (using another CSV seed).
           columns:
             ...
 4. Run your tests: `dbt deps && dbt seed && dbt test`
-        
