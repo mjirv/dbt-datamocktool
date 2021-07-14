@@ -1,3 +1,5 @@
-{% macro test_unit_test(model, expected_output) %}
-    {{ dbt_utils.test_equality(model, compare_model=expected_output) }}
+{% macro test_unit_test(model, input_mapping, expected_output) %}
+    {% set test_sql = dbt_datamocktool.get_unit_test_sql(model, input_mapping) %}
+
+    {% do return(dbt_utils.test_equality(expected_output, test_sql)) %}
 {% endmacro %}
