@@ -19,7 +19,5 @@
         {% endfor %}
     {% endif %}
 
-    {% do log(ns.test_sql, info=True) %}
-
     {{ render(ns.test_sql) }}
 {% endmacro %}
