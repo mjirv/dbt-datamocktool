@@ -37,7 +37,7 @@ and test that the model produces the desired output (using another CSV seed).
 4. Run your tests: `dbt deps && dbt seed && dbt test`
 
 ## Advanced Usage
-Inputs can also be models, SQL statements, and/or macros instead of seeds. See `integration_tests/macros/dmt_raw_customers.sql` and the related test in `integration_tests/models/staging/schema.yml` where this is implemented (the macro and test are copied below).
+Inputs can also be models, SQL statements, and/or macros instead of seeds. See `integration_tests/macros/dmt_raw_customers.sql`, `integration_tests/models/unit_test_helpers/dmt__expected_stg_customers_2.sql`, and the related test in `integration_tests/models/staging/schema.yml` where this is implemented (copied below).
 
 Note that you must wrap your SQL in parentheses in order to create a valid subquery, as below.
 
@@ -48,7 +48,7 @@ Test:
   - dbt_datamocktool.unit_test:
             input_mapping:
               source('jaffle_shop', 'raw_customers'): "{{ dmt_raw_customers() }}" # this is a macro
-            expected_output: ref('dmt__expected_stg_customers_1') # this is a model
+            expected_output: ref('dmt__expected_stg_customers_2') # this is a model
 ```
 
 Model (expected output):
