@@ -41,7 +41,28 @@ Inputs can also be models, SQL statements, and/or macros instead of seeds. See `
 
 Note that you must wrap your SQL in parentheses in order to create a valid subquery, as below.
 
-Macro:
+Expected outputs _must_ be seeds or models because the `dbt_utils.equality` test expects a relation. If you want to write SQL instead of a CSV for the expectation, you can use a model that is materialized as a view, as below.
+
+Test:
+```yaml
+  - dbt_datamocktool.unit_test:
+            input_mapping:
+              source('jaffle_shop', 'raw_customers'): "{{ dmt_raw_customers() }}" # this is a macro
+            expected_output: ref('dmt__expected_stg_customers_1') # this is a model
+```
+
+Model (expected output):
+```sql
+  {{
+      config(materialized='view')
+  }}
+
+  select 1 as customer_id, 'Michael' as first_name, 'P.' as last_name
+  union all
+  select 2 as customer_id, 'Shawn' as first_name, 'M.' as last_name
+```
+
+Macro (input):
 ```sql
   {% macro dmt_raw_customers() %}
     (
@@ -58,16 +79,6 @@ Macro:
         {% endif %}
     {% endfor %}
     ) raw_customers
-
-Test:
 {% endmacro %}
 ```
 
-```yaml
-  - dbt_datamocktool.unit_test:
-            input_mapping:
-              source('jaffle_shop', 'raw_customers'): "{{ dmt_raw_customers() }}"
-            expected_output: ref('dmt__expected_stg_customers_1')
-```
-
-Expected outputs _must_ be seeds or models because the `dbt_utils.equality` test expects a relation. If you want to write SQL instead of a CSV for the expectation, you can use an ephemeral model (a model that is materialized as a CTE).
