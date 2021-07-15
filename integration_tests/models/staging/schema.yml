@@ -12,6 +12,10 @@ models:
           input_mapping:
             source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
           expected_output: ref('dmt__expected_stg_customers_1')
+      - dbt_datamocktool.unit_test:
+          input_mapping:
+            source('jaffle_shop', 'raw_customers'): "{{ dmt_raw_customers() }}"
+          expected_output: ref('dmt__expected_stg_customers_1')
     columns:
       - name: customer_id
         tests:
