@@ -37,11 +37,11 @@ and test that the model produces the desired output (using another CSV seed).
 4. Run your tests: `dbt deps && dbt seed && dbt test`
 
 ## Advanced Usage
-Inputs can also be models, SQL statements, and/or macros instead of seeds. See `integration_tests/macros/dmt_raw_customers.sql`, `integration_tests/models/unit_test_helpers/dmt__expected_stg_customers_2.sql`, and the related test in `integration_tests/models/staging/schema.yml` where this is implemented (copied below).
+Inputs can also be models, SQL statements, and/or macros instead of seeds. See `integration_tests/macros/dmt_raw_customers.sql` and the related test in `integration_tests/models/staging/schema.yml` where this is implemented (copied below).
 
 Note that you must wrap your SQL in parentheses in order to create a valid subquery, as below.
 
-Expected outputs _must_ be seeds or models because the `dbt_utils.equality` test expects a relation. If you want to write SQL instead of a CSV for the expectation, you can use a model that is materialized as a view, as below.
+Expected outputs _must_ be seeds or models because the `dbt_utils.equality` test expects a relation. If you want to write SQL instead of a CSV for the expectation, you can use a model that is materialized as a view. See `integration_tests/models/unit_test_helpers/dmt__expected_stg_customers_2.sql` where this is implemented (copied below).
 
 Test:
 ```yaml
