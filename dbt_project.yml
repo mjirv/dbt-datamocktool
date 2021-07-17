@@ -3,8 +3,10 @@
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
 name: 'dbt_datamocktool'
-version: '0.0.4'
+version: '0.1.1'
 config-version: 2
+
+require-dbt-version: [">=0.19.2"] # weird behavior/errors with the ref() function before 0.19.2
 
 # This setting configures which "profile" dbt uses for this project.
 profile: 'datamocktool'
