@@ -24,7 +24,7 @@ and test that the model produces the desired output (using another CSV seed).
         models:
         - name: stg_customers
           tests:
-            - dbt_datamocktool.unit_test:
+            - dbt_datamocktool.assert_mock_eq:
                 input_mapping:
                   source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
                 expected_output: ref('dmt__expected_stg_customers_1')
@@ -33,7 +33,7 @@ and test that the model produces the desired output (using another CSV seed).
 
         - name: stg_orders
           tests:
-            - dbt_datamocktool.unit_test:
+            - dbt_datamocktool.assert_mock_eq:
                 input_mapping:
                   ref('raw_orders'): ref('dmt__raw_orders_1')
                 expected_output: ref('dmt__expected_stg_orders_1')
@@ -50,7 +50,7 @@ Expected outputs _must_ be seeds or models because the `dbt_utils.equality` test
 
 Test:
 ```yaml
-  - dbt_datamocktool.unit_test:
+  - dbt_datamocktool.assert_mock_eq:
             input_mapping:
               source('jaffle_shop', 'raw_customers'): "{{ dmt_raw_customers() }}" # this is a macro
             expected_output: ref('dmt__expected_stg_customers_2') # this is a model

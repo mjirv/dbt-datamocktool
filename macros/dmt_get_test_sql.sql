@@ -14,13 +14,17 @@
     {% if execute %}
         {# inside an execute block because graph nodes aren't well-defined during parsing #}
         {% set graph_model = graph.nodes["model." + project_name + "." + model.name] %}
-        {% set ns.test_sql = "( " + graph_model.raw_sql + " ) raw_sql" %}
+        {% set ns.test_sql = graph_model.raw_sql %}
 
         {% for k,v in input_mapping.items() %}
             {# render the original sql and replacement key before replacing because v is already rendered when it is passed to this test #}
             {% set ns.test_sql = render(ns.test_sql)|replace(ns.rendered_keys[k], v) %}
         {% endfor %}
+
+        {% set mock_model_relation = make_temp_relation(model) %}
+
+        {% do run_query(create_table_as(true, mock_model_relation, ns.test_sql)) %}
     {% endif %}
 
-    {{ render(ns.test_sql) }}
+    {{ mock_model_relation }}
 {% endmacro %}
