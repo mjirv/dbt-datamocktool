@@ -3,3 +3,8 @@
 
     {% do return(dbt_utils.test_equality(expected_output, compare_model=test_sql)) %}
 {% endmacro %}
+
+{% test assert_mock_eq(model, input_mapping, expected_output) %}
+    {% do return(test_unit_test(model, input_mapping, expected_output)) %}
+{% endtest %}
+
