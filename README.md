@@ -8,7 +8,7 @@ and test that the model produces the desired output (using another CSV seed).
 
 ## Requirements
 * dbt version 0.19.2 or greater
-* Redshift, Postgres, or SQL Server (likely works on Snowflake and BigQuery but has not been specifically tested)
+* BigQuery, Redshift, Postgres, or SQL Server (likely works on Snowflake and BigQuery but has not been specifically tested)
 
 ## Quickstart
 1. Install this package by adding the following to your `packages.yml` file:
