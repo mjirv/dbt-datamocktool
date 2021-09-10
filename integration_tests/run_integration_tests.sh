@@ -1,1 +1,1 @@
-dbt deps && dbt seed && dbt test
+dbt clean && dbt deps && dbt seed && dbt test
