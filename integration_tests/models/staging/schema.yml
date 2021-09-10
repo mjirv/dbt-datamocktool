@@ -16,6 +16,8 @@ models:
           input_mapping:
             source('jaffle_shop', 'raw_customers'): "{{ dmt_raw_customers() }}" # this is a macro
           expected_output: ref('dmt__expected_stg_customers_2') # this is a model
+          name: "Raw Customers 2"
+          description: "This test is a unit test"
     columns:
       - name: customer_id
         tests:

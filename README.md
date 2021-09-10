@@ -42,6 +42,7 @@ and test that the model produces the desired output (using another CSV seed).
 4. Run your tests: `dbt deps && dbt seed && dbt test`
 
 ## Advanced Usage
+### Using Other Materializations
 Inputs can also be models, SQL statements, and/or macros instead of seeds. See `integration_tests/macros/dmt_raw_customers.sql` and the related test in `integration_tests/models/staging/schema.yml` where this is implemented (copied below).
 
 Note that you must wrap your SQL in parentheses in order to create a valid subquery, as below.
@@ -87,3 +88,21 @@ Macro (input):
 {% endmacro %}
 ```
 
+### Test Names/Descriptions
+You can add optional names and descriptions to your tests to make them easier to work with.
+
+For example:
+```yaml
+      - dbt_datamocktool.unit_test:
+          input_mapping:
+            source('jaffle_shop', 'raw_customers'): "{{ dmt_raw_customers() }}" # this is a macro
+          expected_output: ref('dmt__expected_stg_customers_2') # this is a model
+          name: "Raw Customers 2"
+          description: "This test is a unit test"
+```
+
+will show up in your test run as follows:
+```python
+21:37:48 | 4 of 23 START test dbt_datamocktool_unit_test_stg_customers_This_test_is_a_unit_test__ref_dmt__expected_stg_customers_2____dmt_raw_customers___Raw_Customers_2 [RUN]
+21:37:49 | 4 of 23 PASS dbt_datamocktool_unit_test_stg_customers_This_test_is_a_unit_test__ref_dmt__expected_stg_customers_2____dmt_raw_customers___Raw_Customers_2 [PASS in 0.27s]
+```
