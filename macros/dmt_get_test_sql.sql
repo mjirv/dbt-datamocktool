@@ -24,7 +24,7 @@
         {# SQL Server requires us to specify a table type because it calls `drop_relation_script()` from `create_table_as()`.
         I'd prefer to use something like RelationType.table, but can't find a way to access the relation types #}
         {% do adapter.create_schema(api.Relation.create(database=model.database, schema=model.schema)) %}
-        {% set mock_model_relation = make_temp_relation(model.incorporate(type='table')) %}
+        {% set mock_model_relation = make_temp_relation(model.incorporate(type='table'), suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f") ~ '_')) %}
 
         {% do run_query(create_table_as(true, mock_model_relation, ns.test_sql)) %}
     {% endif %}
