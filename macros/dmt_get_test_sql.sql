@@ -1,6 +1,9 @@
 
 
-{% macro get_unit_test_sql(model, input_mapping) %}
+{% macro get_unit_test_sql(model, input_mapping, depends_on) %}
+
+
+
     {% set ns=namespace(
         test_sql="(select 1) raw_sql",
         rendered_keys={}
@@ -30,4 +33,9 @@
     {% endif %}
 
     {{ mock_model_relation }}
+
+    {% for k in depends_on %}
+        -- depends_on: {{ ref( k ) }}
+    {% endfor %}
+
 {% endmacro %}

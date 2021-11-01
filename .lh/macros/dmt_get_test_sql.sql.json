@@ -1,0 +1,18 @@
+{
+    "sourceFile": "macros/dmt_get_test_sql.sql",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1635783274594,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1635783274594,
+            "name": "Commit-0",
+            "content": "\r\n\r\n{% macro get_unit_test_sql(model, input_mapping, depends_on) %}\r\n\r\n\r\n\r\n    {% set ns=namespace(\r\n        test_sql=\"(select 1) raw_sql\",\r\n        rendered_keys={}\r\n    ) %}\r\n\r\n    {% for k in input_mapping.keys() %}\r\n        {# doing this outside the execute block allows dbt to infer the proper dependencies #}\r\n        {% do ns.rendered_keys.update({k: render(\"{{ \" + k + \" }}\")}) %}\r\n    {% endfor %}\r\n\r\n    {% if execute %}\r\n        {# inside an execute block because graph nodes aren't well-defined during parsing #}\r\n        {% set graph_model = graph.nodes[\"model.\" + project_name + \".\" + model.name] %}\r\n        {% set ns.test_sql = graph_model.raw_sql %}\r\n\r\n        {% for k,v in input_mapping.items() %}\r\n            {# render the original sql and replacement key before replacing because v is already rendered when it is passed to this test #}\r\n            {% set ns.test_sql = render(ns.test_sql)|replace(ns.rendered_keys[k], v) %}\r\n        {% endfor %}\r\n\r\n        {# SQL Server requires us to specify a table type because it calls `drop_relation_script()` from `create_table_as()`.\r\n        I'd prefer to use something like RelationType.table, but can't find a way to access the relation types #}\r\n        {% do adapter.create_schema(api.Relation.create(database=model.database, schema=model.schema)) %}\r\n        {% set mock_model_relation = make_temp_relation(model.incorporate(type='table'), suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime(\"%S%f\") ~ '_')) %}\r\n\r\n        {% do run_query(create_table_as(true, mock_model_relation, ns.test_sql)) %}\r\n    {% endif %}\r\n\r\n    {{ mock_model_relation }}\r\n\r\n    {% for k in depends_on %}\r\n        -- depends_on: {{ ref( k ) }}\r\n    {% endfor %}\r\n\r\n{% endmacro %}\r\n"
+        }
+    ]
+}

@@ -28,6 +28,8 @@ and test that the model produces the desired output (using another CSV seed).
                 input_mapping:
                   source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
                 expected_output: ref('dmt__expected_stg_customers_1')
+                depends_on: 
+                  - raw_customers
           columns:
             ...
 
@@ -37,6 +39,8 @@ and test that the model produces the desired output (using another CSV seed).
                 input_mapping:
                   ref('raw_orders'): ref('dmt__raw_orders_1')
                 expected_output: ref('dmt__expected_stg_orders_1')
+                depends_on: 
+                  - raw_orders
           columns:
             ...
 4. Run your tests: `dbt deps && dbt seed && dbt test`

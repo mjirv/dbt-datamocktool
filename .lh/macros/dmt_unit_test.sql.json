@@ -1,0 +1,18 @@
+{
+    "sourceFile": "macros/dmt_unit_test.sql",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1635783265781,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1635783265781,
+            "name": "Commit-0",
+            "content": "{% test unit_test(model, input_mapping, expected_output, depends_on, name, description) %}\n    {% set test_sql = dbt_datamocktool.get_unit_test_sql(model, input_mapping, depends_on) %}\n\n    {% do return(dbt_utils.test_equality(expected_output, compare_model=test_sql)) %}\n{% endtest %}\n\n{% test assert_mock_eq(model, input_mapping, expected_output) %}\n    {% do return(test_unit_test(model, input_mapping, expected_output)) %}\n{% endtest %}\n\n"
+        }
+    ]
+}
