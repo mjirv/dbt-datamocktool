@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1635783274594,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1635840020690,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,12 +29,12 @@\n         {% do adapter.create_schema(api.Relation.create(database=model.database, schema=model.schema)) %}\r\n         {% set mock_model_relation = make_temp_relation(model.incorporate(type='table'), suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime(\"%S%f\") ~ '_')) %}\r\n \r\n         {% do run_query(create_table_as(true, mock_model_relation, ns.test_sql)) %}\r\n-    {% endif %}\r\n-\r\n-    {{ mock_model_relation }}\r\n-\r\n+        \r\n+        {{ mock_model_relation.path.identifier }}\r\n+    {% endif %}   \r\n+    \r\n     {% for k in depends_on %}\r\n         -- depends_on: {{ ref( k ) }}\r\n     {% endfor %}\r\n \r\n"
+                },
+                {
+                    "date": 1635877376375,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,8 +34,8 @@\n         {{ mock_model_relation.path.identifier }}\r\n     {% endif %}   \r\n     \r\n     {% for k in depends_on %}\r\n-        -- depends_on: {{ ref( k ) }}\r\n+        -- depends_on: {{ k }}\r\n     {% endfor %}\r\n \r\n {% endmacro %}\r\n"
                 }
             ],
             "date": 1635783274594,

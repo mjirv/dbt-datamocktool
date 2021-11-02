@@ -30,12 +30,12 @@
         {% set mock_model_relation = make_temp_relation(model.incorporate(type='table'), suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f") ~ '_')) %}
 
         {% do run_query(create_table_as(true, mock_model_relation, ns.test_sql)) %}
-    {% endif %}
-
-    {{ mock_model_relation }}
-
+        
+        {{ mock_model_relation.path.identifier }}
+    {% endif %}   
+    
     {% for k in depends_on %}
-        -- depends_on: {{ ref( k ) }}
+        -- depends_on: {{ k }}
     {% endfor %}
 
 {% endmacro %}
