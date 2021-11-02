@@ -1,5 +1,3 @@
-
-
 {% macro get_unit_test_sql(model, input_mapping) %}
     {% set ns=namespace(
         test_sql="(select 1) raw_sql",
@@ -7,6 +5,7 @@
     ) %}
 
     {% for k in input_mapping.keys() %}
+        -- depends on: {{ render("{{ " ~ k ~ " }}") }}
         {# doing this outside the execute block allows dbt to infer the proper dependencies #}
         {% do ns.rendered_keys.update({k: render("{{ " + k + " }}")}) %}
     {% endfor %}
