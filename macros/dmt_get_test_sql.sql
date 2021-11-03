@@ -19,7 +19,6 @@
         {% if ns.graph_model is none %}
             {% for node in graph.nodes.values() %}
                 {% if node.alias == model.name and node.schema == model.schema %}
-                    {% do log(model.name, info=True) %}
                     {% set ns.graph_model = node %}
                 {% endif %}
             {% endfor %}
