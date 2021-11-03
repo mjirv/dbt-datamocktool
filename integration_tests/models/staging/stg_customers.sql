@@ -1,3 +1,5 @@
+{{ config(alias='stg_customers_with_alias') }}
+
 with source as (
 
     {#-
