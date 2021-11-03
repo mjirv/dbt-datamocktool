@@ -18,7 +18,7 @@
         {# if the model uses an alias, the above call was unsuccessful, so loop through the graph to grab it by the alias instead #}
         {% if ns.graph_model is none %}
             {% for node in graph.nodes.values() %}
-                {% if node.alias == model.name %}
+                {% if node.alias == model.name and node.schema == model.schema %}
                     {% do log(model.name, info=True) %}
                     {% set ns.graph_model = node %}
                 {% endif %}
