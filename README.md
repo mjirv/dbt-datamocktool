@@ -14,7 +14,7 @@ and test that the model produces the desired output (using another CSV seed).
 1. Install this package by adding the following to your `packages.yml` file:
     * ```yaml 
         - package: mjirv/dbt_datamocktool
-          version: [">=0.1.4"]
+          version: [">=0.1.5"]
     * Note that for the revision, you can also use `0.1.2` if other packages require fishtown-analytics/dbt_utils instead of dbt-labs/dbt_utils (most other functionality is the same).
 2. Create your mocks: sample inputs for your models and the expected outputs of those models given the inputs.
     * Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
@@ -28,9 +28,6 @@ and test that the model produces the desired output (using another CSV seed).
                 input_mapping:
                   source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
                 expected_output: ref('dmt__expected_stg_customers_1')
-                compare_columns:
-                  - first_column
-                  - second_column
           columns:
             ...
 
@@ -108,4 +105,21 @@ will show up in your test run as follows:
 ```python
 21:37:48 | 4 of 23 START test dbt_datamocktool_unit_test_stg_customers_This_test_is_a_unit_test__ref_dmt__expected_stg_customers_2____dmt_raw_customers___Raw_Customers_2 [RUN]
 21:37:49 | 4 of 23 PASS dbt_datamocktool_unit_test_stg_customers_This_test_is_a_unit_test__ref_dmt__expected_stg_customers_2____dmt_raw_customers___Raw_Customers_2 [PASS in 0.27s]
+```
+
+### Compare Columns ###
+If you only want to mock a few columns, you can do so and use the `compare_columns` field to tell the test which columns to look at, like so:
+```yaml
+  models:
+    - name: stg_customers
+      tests:
+        - dbt_datamocktool.unit_test:
+            input_mapping:
+              source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
+            expected_output: ref('dmt__expected_stg_customers_1')
+            compare_columns:
+              - first_name
+              - last_name
+      columns:
+        ...
 ```
