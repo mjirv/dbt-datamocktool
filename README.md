@@ -28,6 +28,9 @@ and test that the model produces the desired output (using another CSV seed).
                 input_mapping:
                   source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
                 expected_output: ref('dmt__expected_stg_customers_1')
+                compare_columns:
+                  - first_column
+                  - second_column
           columns:
             ...
 
