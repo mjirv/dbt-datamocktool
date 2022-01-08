@@ -7,7 +7,9 @@ Using dmt, you can create mock CSV seeds to stand in for the sources and refs th
 and test that the model produces the desired output (using another CSV seed).
 
 ## Requirements
-* dbt version 0.19.2 or greater
+* dbt version:
+    * 1.0 or greater for datamocktool>=0.1.8
+    * 0.19.2 or greater for datamocktool<0.1.8
 * BigQuery, Redshift, Postgres, or SQL Server (likely works on Snowflake but has not been specifically tested)
 
 ## Quickstart
