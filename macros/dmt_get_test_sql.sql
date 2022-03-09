@@ -34,9 +34,9 @@
             {% do adapter.create_schema(api.Relation.create(database=model.database, schema=model.schema)) %}
         {% endif %}
 
-        {% set mock_model_relation = make_temp_relation(dbt_datamocktool._get_model_to_mock(model), suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))) %}
+        {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))) %}
 
-        {% do run_query(create_table_as(true, mock_model_relation, ns.test_sql)) %}
+        {% do run_query(create_table_as(false, mock_model_relation, ns.test_sql)) %}
     {% endif %}
 
 
@@ -44,14 +44,16 @@
 {% endmacro %}
 
 {# Spark-specific logic excludes a schema name in order to fix https://github.com/mjirv/dbt-datamocktool/issues/22 #}
-{% macro _get_model_to_mock(model) %}
-    {{ return(adapter.dispatch('_get_model_to_mock', 'dbt_datamocktool')(model)) }}
+{% macro _get_model_to_mock(model, suffix) %}
+    {{ return(adapter.dispatch('_get_model_to_mock', 'dbt_datamocktool')(model, suffix)) }}
 {% endmacro %}
 
-{% macro default___get_model_to_mock(model) %}
-    {{ return(model.incorporate(type='table')) }}
+{% macro default___get_model_to_mock(model, suffix) %}
+    {% set tmp_identifier = model.identifier ~ suffix %}
+    {{ return(model.incorporate(type='table', path={"identifier": tmp_identifier})) }}
 {% endmacro %}
 
-{% macro spark___get_model_to_mock(model) %}
-    {{ return(model.incorporate(type='table').include(schema=False)) }}
+{% macro spark___get_model_to_mock(model, suffix) %}
+    {% set tmp_identifier = model.identifier ~ suffix %}
+    {{ return(model.incorporate(type='table', path={"identifier": tmp_identifier}).include(schema=False)) }}
 {% endmacro %}
