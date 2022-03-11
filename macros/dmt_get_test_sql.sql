@@ -30,17 +30,14 @@
 
         {# SQL Server requires us to specify a table type because it calls `drop_relation_script()` from `create_table_as()`.
         I'd prefer to use something like RelationType.table, but can't find a way to access the relation types #}
-        {% if not adapter.check_schema_exists(database=model.database, schema=model.schema) %}
-            {% do adapter.create_schema(api.Relation.create(database=model.database, schema=model.schema)) %}
-        {% endif %}
 
-        {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))) %}
 
-        {% do run_query(create_table_as(false, mock_model_relation, ns.test_sql)) %}
+        {% set ns.test_sql = dbt_datamocktool._get_test_sql(model, ns.test_sql) %}
+
     {% endif %}
 
 
-    {{ mock_model_relation }}
+    {{ ns.test_sql }}
 {% endmacro %}
 
 {# Spark-specific logic excludes a schema name in order to fix https://github.com/mjirv/dbt-datamocktool/issues/22 #}
@@ -56,4 +53,26 @@
 {% macro spark___get_model_to_mock(model, suffix) %}
     {% set tmp_identifier = model.identifier ~ suffix %}
     {{ return(model.incorporate(type='table', path={"identifier": tmp_identifier}).include(schema=False)) }}
+{% endmacro %}
+
+
+{% macro _get_test_sql(model, test_sql) %}
+    {{ return(adapter.dispatch('_get_test_sql', 'dbt_datamocktool')(model, test_sql)) }}
+{% endmacro %}
+
+{% macro default___get_test_sql(model, test_sql) %}
+    ( {{ test_sql }} ) dmt__test_sql
+{% endmacro %}
+
+{% macro sqlserver___get_test_sql(model, test_sql) %}
+    {% set dmt_tmp_schema = "datamocktool__tmp" %}
+    {% if not adapter.check_schema_exists(database=model.database, schema=dmt_tmp_schema) %}
+        {% do adapter.create_schema(api.Relation.create(database=model.database, schema=dmt_tmp_schema)) %}
+    {% endif %}
+    {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(
+        model.incorporate(path={"schema": dmt_tmp_schema}), suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))) 
+    %}
+
+    {% do run_query(create_view_as(mock_model_relation, test_sql)) %}
+    {{ return(mock_model_relation) }}
 {% endmacro %}
