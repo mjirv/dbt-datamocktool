@@ -28,30 +28,52 @@
             {% set ns.test_sql = render(ns.test_sql)|replace(ns.rendered_keys[k], v) %}
         {% endfor %}
 
-        {# SQL Server requires us to specify a table type because it calls `drop_relation_script()` from `create_table_as()`.
-        I'd prefer to use something like RelationType.table, but can't find a way to access the relation types #}
-        {% if not adapter.check_schema_exists(database=model.database, schema=model.schema) %}
-            {% do adapter.create_schema(api.Relation.create(database=model.database, schema=model.schema)) %}
-        {% endif %}
+        {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(
+            model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))
+        ) %}
 
-        {% set mock_model_relation = make_temp_relation(dbt_datamocktool._get_model_to_mock(model), suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))) %}
-
-        {% do run_query(create_table_as(true, mock_model_relation, ns.test_sql)) %}
+        {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, ns.test_sql) %}
     {% endif %}
 
 
     {{ mock_model_relation }}
 {% endmacro %}
 
+
+{% macro _get_model_to_mock(model, suffix) %}
+    {{ return(adapter.dispatch('_get_model_to_mock', 'dbt_datamocktool')(model, suffix)) }}
+{% endmacro %}
+
+{% macro default___get_model_to_mock(model, suffix) %}
+    {{ return(make_temp_relation(model.incorporate(type='table', suffix=suffix))) }}
+{% endmacro %}
+
 {# Spark-specific logic excludes a schema name in order to fix https://github.com/mjirv/dbt-datamocktool/issues/22 #}
-{% macro _get_model_to_mock(model) %}
-    {{ return(adapter.dispatch('_get_model_to_mock', 'dbt_datamocktool')(model)) }}
+{% macro spark___get_model_to_mock(model, suffix) %}
+    {{ return(make_temp_relation(model.incorporate(type='table').include(schema=False), suffix=suffix)) }}
 {% endmacro %}
 
-{% macro default___get_model_to_mock(model) %}
-    {{ return(model.incorporate(type='table')) }}
+{# SQL Server logic creates a view instead of a temp table to fix https://github.com/mjirv/dbt-datamocktool/issues/42 #}
+{% macro sqlserver___get_model_to_mock(model, suffix) %}
+    {% set schema = "datamocktool_tmp" %}
+    {% if not adapter.check_schema_exists(database=model.database, schema=schema) %}
+        {% do adapter.create_schema(api.Relation.create(database=model.database, schema=schema)) %}
+    {% endif %}
+    {% set tmp_identifier = model.identifier ~ suffix %}
+    {# SQL Server requires us to specify a table type because it calls `drop_relation_script()` from `create_table_as()`.
+    I'd prefer to use something like RelationType.table, but can't find a way to access the relation types #}
+    {{ return(model.incorporate(type='view', path={"identifier": tmp_identifier, "schema": schema})) }}
 {% endmacro %}
 
-{% macro spark___get_model_to_mock(model) %}
-    {{ return(model.incorporate(type='table').include(schema=False)) }}
+
+{% macro _create_mock_table_or_view(model, test_sql) %}
+    {{ return(adapter.dispatch('_create_mock_table_or_view', 'dbt_datamocktool')(model, test_sql)) }}
+{% endmacro %}
+
+{% macro default___create_mock_table_or_view(model, test_sql) %}
+    {% do run_query(create_table_as(True, model, test_sql)) %}
+{% endmacro %}
+
+{% macro sqlserver___create_mock_table_or_view(model, test_sql) %}
+    {% do run_query(create_view_as(model, test_sql)) %}
 {% endmacro %}
