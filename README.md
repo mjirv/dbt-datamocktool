@@ -16,8 +16,7 @@ and test that the model produces the desired output (using another CSV seed).
 1. Install this package by adding the following to your `packages.yml` file:
     * ```yaml 
         - package: mjirv/dbt_datamocktool
-          version: [">=0.1.8"]
-    * Note that for the revision, you can also use `0.1.2` if other packages require fishtown-analytics/dbt_utils instead of dbt-labs/dbt_utils (most other functionality is the same).
+          version: [">=0.1.10"]
 2. Create your mocks: sample inputs for your models and the expected outputs of those models given the inputs.
     * Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
     * See the `integration_tests/data/` directory of this project for some examples
