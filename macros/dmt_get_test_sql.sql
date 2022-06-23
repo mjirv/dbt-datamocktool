@@ -45,7 +45,7 @@
 {% endmacro %}
 
 {% macro default___get_model_to_mock(model, suffix) %}
-    {{ return(make_temp_relation(model.incorporate(type='table', suffix=suffix))) }}
+    {{ return(make_temp_relation(model.incorporate(type='table'), suffix=suffix)) }}
 {% endmacro %}
 
 {# Spark-specific logic excludes a schema name in order to fix https://github.com/mjirv/dbt-datamocktool/issues/22 #}
