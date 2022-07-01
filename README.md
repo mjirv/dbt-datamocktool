@@ -7,15 +7,16 @@ Using dmt, you can create mock CSV seeds to stand in for the sources and refs th
 and test that the model produces the desired output (using another CSV seed).
 
 ## Requirements
-* dbt version 0.19.2 or greater
+* dbt version:
+    * 1.0 or greater for datamocktool>=0.1.8
+    * 0.19.2 or greater for datamocktool<0.1.8
 * BigQuery, Redshift, Postgres, or SQL Server (likely works on Snowflake but has not been specifically tested)
 
 ## Quickstart
 1. Install this package by adding the following to your `packages.yml` file:
     * ```yaml 
         - package: mjirv/dbt_datamocktool
-          version: [">=0.1.4"]
-    * Note that for the revision, you can also use `0.1.2` if other packages require fishtown-analytics/dbt_utils instead of dbt-labs/dbt_utils (most other functionality is the same).
+          version: [">=0.1.10"]
 2. Create your mocks: sample inputs for your models and the expected outputs of those models given the inputs.
     * Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
     * See the `integration_tests/data/` directory of this project for some examples
@@ -28,6 +29,8 @@ and test that the model produces the desired output (using another CSV seed).
                 input_mapping:
                   source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
                 expected_output: ref('dmt__expected_stg_customers_1')
+                depends_on: 
+                  - raw_customers
           columns:
             ...
 
@@ -37,6 +40,8 @@ and test that the model produces the desired output (using another CSV seed).
                 input_mapping:
                   ref('raw_orders'): ref('dmt__raw_orders_1')
                 expected_output: ref('dmt__expected_stg_orders_1')
+                depends_on: 
+                  - raw_orders
           columns:
             ...
 4. Run your tests: `dbt deps && dbt seed && dbt test`
@@ -105,4 +110,21 @@ will show up in your test run as follows:
 ```python
 21:37:48 | 4 of 23 START test dbt_datamocktool_unit_test_stg_customers_This_test_is_a_unit_test__ref_dmt__expected_stg_customers_2____dmt_raw_customers___Raw_Customers_2 [RUN]
 21:37:49 | 4 of 23 PASS dbt_datamocktool_unit_test_stg_customers_This_test_is_a_unit_test__ref_dmt__expected_stg_customers_2____dmt_raw_customers___Raw_Customers_2 [PASS in 0.27s]
+```
+
+### Compare Columns ###
+If you only want to mock a few columns, you can do so and use the `compare_columns` field to tell the test which columns to look at, like so:
+```yaml
+  models:
+    - name: stg_customers
+      tests:
+        - dbt_datamocktool.unit_test:
+            input_mapping:
+              source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
+            expected_output: ref('dmt__expected_stg_customers_1')
+            compare_columns:
+              - first_name
+              - last_name
+      columns:
+        ...
 ```
