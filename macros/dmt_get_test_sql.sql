@@ -1,4 +1,4 @@
-{% macro get_unit_test_sql(model, input_mapping) %}
+{% macro get_unit_test_sql(model, input_mapping, depends_on) %}
     {% set ns=namespace(
         test_sql="(select 1) raw_sql",
         rendered_keys={},
@@ -35,7 +35,10 @@
         {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, ns.test_sql) %}
     {% endif %}
 
-
+    {% for k in depends_on %}
+        -- depends_on: {{ k }}
+    {% endfor %}
+    
     {{ mock_model_relation }}
 {% endmacro %}
 
