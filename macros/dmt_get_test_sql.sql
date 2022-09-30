@@ -28,11 +28,26 @@
             {% set ns.test_sql = render(ns.test_sql)|replace(ns.rendered_keys[k], v) %}
         {% endfor %}
 
-        {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(
+        {# Store model result for visibility in case of unit test failure #}
+        {% set identifier_name = model.name %}
+        {% if test_case %}
+            {% set identifier_name = identifier_name ~ '__test_case_'~test_case %}        
+        {% endif %}
+        {# Note: possible to hardcode desired database.schema to store the mocked model output #}
+        {% set mock_model_relation = api.Relation.create(
+                    database=model.database,
+                    schema=model.schema,
+                    identifier=identifier_name,
+                    type='view') %}
+        {# Create view to expose full definition #}
+        {% do run_query(create_view_as(relation, ns.test_sql)) %}
+
+        {# FIXME: commenting out as not sure best way to incorporate the dispatch pattern #}
+        {# {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(
             model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))
         ) %}
 
-        {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, ns.test_sql) %}
+        {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, ns.test_sql) %} #}
     {% endif %}
 
     {% for k in depends_on %}
