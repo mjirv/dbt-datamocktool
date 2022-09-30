@@ -1,5 +1,14 @@
-# datamocktool
-
+<h1 align="left">datamocktool</h1>
+- [About](#about)
+- [Requirements](#requirements)
+- [Quickstart](#quickstart)
+- [Advanced Usage](#advanced-usage)
+  - [Using Other Materializations](#using-other-materializations)
+  - [Test Names/Descriptions](#test-namesdescriptions)
+  - [Compare Columns](#compare-columns)
+  - [Manual Dependencies](#manual-dependencies)
+  - [Support multiple test cases](#support-multiple-test-cases)
+  - [Visibility on test failure](#visibility-on-test-failure)
 ## About
 
 datamocktool (dmt) is a simple package for unit testing dbt projects.
@@ -183,3 +192,5 @@ This will result in a **single** test being executed. But under the hood, all te
 
 In case of any failures, the **single** test will return a count of errors > 0, making it a "dbt-test failure". The full log will contain a list of all failing tests.
 
+### Visibility on test failure
+TODO: if storing result as a view, it is possible to inspect the mocked model code, making it easier to debug issues with failing tests.
