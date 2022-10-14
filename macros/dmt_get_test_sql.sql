@@ -1,6 +1,6 @@
 {% macro get_unit_test_sql(model, input_mapping, depends_on) %}
     {% set ns=namespace(
-        test_sql="(select 1) raw_sql",
+        test_sql="(select 1) raw_code",
         rendered_keys={},
         graph_model=none
     ) %}
@@ -21,7 +21,7 @@
                 {% endif %}
             {% endfor %}
         {% endif %}
-        {% set ns.test_sql = ns.graph_model.raw_sql %}
+        {% set ns.test_sql = ns.graph_model.raw_code %}
 
         {% for k,v in input_mapping.items() %}
             {# render the original sql and replacement key before replacing because v is already rendered when it is passed to this test #}
