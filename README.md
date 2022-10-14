@@ -1,5 +1,14 @@
-# datamocktool
+<h1 align="left">datamocktool</h1>
 
+- [About](#about)
+- [Requirements](#requirements)
+- [Quickstart](#quickstart)
+- [Advanced Usage](#advanced-usage)
+  - [Using Other Materializations](#using-other-materializations)
+  - [Test Names/Descriptions](#test-namesdescriptions)
+  - [Compare Columns](#compare-columns)
+  - [Manual Dependencies](#manual-dependencies)
+  - [Multiple test cases](#multiple-test-cases)
 ## About
 
 datamocktool (dmt) is a simple package for unit testing dbt projects.
@@ -157,3 +166,28 @@ models:
             - ref('raw_customers')
     columns: ...
 ```
+
+### Multiple test cases
+
+It is also possible to support the same model unit test over multiple test cases.
+
+* `test_case_list`: new optional field, expects an array with the test cases to be applied on `input_mapping` and `expected_output`
+* `@`: The special character to be used as template for string substitution, iterating through the values of `test_case_list`
+* `\`: the special character added to the beginning of the value. This is required to stop Jinja automatically rendering the value (i.e: `ref()`, `source()` etc.)
+
+```yaml
+models:
+  - name: stg_customers
+    tests:
+      - dbt_datamocktool.unit_test:
+          tags: 
+            - example_tag_unit_test 
+          test_case_list: [1,2,3,5,8,13,21]
+          input_mapping:
+            source('jaffle_shop', 'raw_customers'): \ref('dmt__raw_customers_@')
+          expected_output: \ref('dmt__expected_stg_customers_@')
+```
+
+This will result in a **single** test being executed. But under the hood, all test cases listed are checked. Any error count is passed as the test output.
+
+In case of any failures, the **single** test will return a count of errors > 0, making it a "dbt-test failure". The full log will contain a list of all failing tests.
