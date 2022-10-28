@@ -30,6 +30,11 @@ models:
           input_mapping:
             ref('raw_orders'): ref('dmt__raw_orders_1')
           expected_output: ref('dmt__expected_stg_orders_1')
+      - dbt_datamocktool.unit_test:
+          input_mapping:
+            ref('raw_orders'): ref('dmt__raw_orders_3')
+            this: ref('dmt__raw_orders_2')
+          expected_output: ref('dmt__expected_stg_orders_2')
     columns:
       - name: order_id
         tests:
