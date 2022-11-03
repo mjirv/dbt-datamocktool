@@ -24,8 +24,9 @@
         {% set ns.test_sql = ns.graph_model.raw_code %}
 
         {# before rendering -- check if test should be incremental #}
-        {# suppose it is incremental if this is in input mapping #}
-        {% if 'this' in input_mapping.keys() %}    
+        {# expect we are testing incremental functionality if "this" is in input mapping #}
+        {% if 'this' in input_mapping.keys() %}
+            {# replace is_incremental blocks to true to enable incremental code #}
             {% set ns.test_sql = ns.test_sql|replace('is_incremental()','true') %}     
         {% endif %}
 
@@ -34,7 +35,7 @@
             {% set ns.test_sql = render(ns.test_sql)|replace(ns.rendered_keys[k], v) %}
         {% endfor %}
 
-        {# after rendering .. replace this with project dataset and mocked ""this"" model #}
+        {# after rendering - replace "this" with mock project and model #}
         {% if 'this' in input_mapping.keys() %}    
             {% set ns.test_sql = ns.test_sql|replace(this.dataset, model.dataset) %}     
             {% set ns.test_sql = ns.test_sql|replace(this.table, input_mapping.this) %}     
@@ -45,24 +46,17 @@
             model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))
         ) %}
 
-        {{ log('var: ' ~ mock_model_relation, info=True) }}
-
-        {# TODO create merge instead of create table or view if its an incremental test  #}
-        {# if incremtental test then #}
-            {# create base model from input  (copy seed into target table?) #}
-
         {% if 'this' in input_mapping.keys() %}    
-            {# create base model from input  (copy seed into target table?) #}
+            {# incremental test #}
+            {# mock current model state from input #}
             {{ log("copying base table", info=True) }}
             {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, "select * from " ~ input_mapping.this) %}
             
-            {# create merge statement to merge into base model #}
-            {{ log("creating merge statement", info=True) }}
+            {# mock merge statement#}
             {# need sql to be wrapped in parentheses  - see bq_generate_incremental_build_sql #}
             {% do dbt_datamocktool._create_mock_merge_table(mock_model_relation, "(" + ns.test_sql + ")", dest_columns=adapter.get_columns_in_relation(mock_model_relation)) %}
         {% else %}
-            {# normal run #}
-            {{ log("normal run", info=True) }}
+            {# normal test without incremental #}
             {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, ns.test_sql) %}
         {% endif %}
 
