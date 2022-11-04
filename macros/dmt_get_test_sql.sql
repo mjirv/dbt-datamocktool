@@ -5,60 +5,68 @@
         graph_model=none
     ) %}
 
-    {% for k in input_mapping.keys() %}
-        {# doing this outside the execute block allows dbt to infer the proper dependencies #}
-        {% do ns.rendered_keys.update({k: render("{{ " + k + " }}")}) %}
-    {% endfor %}
+    {% do dbt_datamocktool.__set_rendered_keys(ns, input_mapping.keys()) %}
 
     {% if execute %}
         {# inside an execute block because graph nodes aren't well-defined during parsing #}
-        {% set ns.graph_model = graph.nodes.get("model." + project_name + "." + model.name) %}
-        {# if the model uses an alias, the above call was unsuccessful, so loop through the graph to grab it by the alias instead #}
-        {% if ns.graph_model is none %}
-            {% for node in graph.nodes.values() %}
-                {% if node.alias == model.name and node.schema == model.schema %}
-                    {% set ns.graph_model = node %}
-                {% endif %}
-            {% endfor %}
-        {% endif %}
+        {% set ns.graph_model = dbt_datamocktool.__get_graph_model(project_name, model.schema, model.name) %}
         {% set ns.test_sql = ns.graph_model.raw_code %}
 
-        {# before rendering -- check if test should be incremental #}
-        {# expect we are testing incremental functionality if "this" is in input mapping #}
-        {% if 'this' in input_mapping.keys() %}
-            {# replace is_incremental blocks to true to enable incremental code #}
-            {% set ns.test_sql = ns.test_sql|replace('is_incremental()','true') %}     
-        {% endif %}
+        {% do dbt_datamocktool.__render_sql_and_replace_references(ns, input_mapping) %}
 
-        {% for k,v in input_mapping.items() %}
-            {# render the original sql and replacement key before replacing because v is already rendered when it is passed to this test #}
-            {% set ns.test_sql = render(ns.test_sql)|replace(ns.rendered_keys[k], v) %}
-        {% endfor %}
+        {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(
+            model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))
+        ) %}
+
+        {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, ns.test_sql) %}
+
+
+    {% endif %}
+    {% for k in depends_on %}
+        -- depends_on: {{ k }}
+    {% endfor %}
+    
+    {{ mock_model_relation }}
+{% endmacro %}
+
+{% macro get_unit_test_incremental_sql(model, input_mapping, depends_on) %}
+    {% set ns=namespace(
+        test_sql="(select 1) raw_code",
+        rendered_keys={},
+        graph_model=none
+    ) %}
+
+    {# doing this outside the execute block allows dbt to infer the proper dependencies #}
+    {% do dbt_datamocktool.__set_rendered_keys(ns, input_mapping.keys()) %}
+
+    {% if execute %}
+        {# inside an execute block because graph nodes aren't well-defined during parsing #}
+        {% set ns.graph_model = dbt_datamocktool.__get_graph_model(project_name, model.schema, model.name) %}
+
+        {% set ns.test_sql = ns.graph_model.raw_code %}
+
+        {# replace is_incremental blocks to true to enable incremental code #}
+        {% set ns.test_sql = ns.test_sql|replace('is_incremental()','true') %}     
+        
+        {% do dbt_datamocktool.__render_sql_and_replace_references(ns, input_mapping) %}
 
         {# after rendering - replace "this" with mock project and model #}
-        {% if 'this' in input_mapping.keys() %}    
-            {% set ns.test_sql = ns.test_sql|replace(this.dataset, model.dataset) %}     
-            {% set ns.test_sql = ns.test_sql|replace(this.table, input_mapping.this) %}     
-        {% endif %}
-
+        {# TODO: try catch  -- if this not exists in input mapping #}
+        {% set ns.test_sql = ns.test_sql|replace(this.dataset, model.dataset) %}     
+        {% set ns.test_sql = ns.test_sql|replace(this.table, input_mapping.this) %}     
+        
         {# mock_model_relation is the mocked model name #}
         {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(
             model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))
         ) %}
 
-        {% if 'this' in input_mapping.keys() %}    
-            {# incremental test #}
-            {# mock current model state from input #}
-            {{ log("copying base table", info=True) }}
-            {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, "select * from " ~ input_mapping.this) %}
-            
-            {# mock merge statement#}
-            {# need sql to be wrapped in parentheses  - see bq_generate_incremental_build_sql #}
-            {% do dbt_datamocktool._create_mock_merge_table(mock_model_relation, "(" + ns.test_sql + ")", dest_columns=adapter.get_columns_in_relation(mock_model_relation)) %}
-        {% else %}
-            {# normal test without incremental #}
-            {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, ns.test_sql) %}
-        {% endif %}
+        {# mock current model state from input #}
+        {{ log("copying base table", info=True) }}
+        {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, "select * from " ~ input_mapping.this) %}
+        
+        {# mock merge statement#}
+        {# need sql to be wrapped in parentheses  - see bq_generate_incremental_build_sql #}
+        {% do dbt_datamocktool._create_mock_merge_table(mock_model_relation, "(" + ns.test_sql + ")", dest_columns=adapter.get_columns_in_relation(mock_model_relation)) %}
 
     {% endif %}
     {% for k in depends_on %}
@@ -113,4 +121,31 @@
 
 {% macro default___create_mock_merge_table(model, test_sql, dest_columns) %}
     {% do run_query(get_merge_sql(model, test_sql, dest_columns=dest_columns)) %}
+{% endmacro %}
+
+{% macro __set_rendered_keys(ns, keys) %}  
+    {% for k in keys %}
+        {% do ns.rendered_keys.update({k: render("{{ " + k + " }}")}) %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro __get_graph_model(project_name, model_schema, model_name) %}  
+    {% set graph_model = graph.nodes.get("model." + project_name + "." + model_name) %}
+    {# if the model uses an alias, the above call was unsuccessful, so loop through the graph to grab it by the alias instead #}
+    {% if graph_model is none %}
+        {% for node in graph.nodes.values() %}
+            {% if node.alias == model_name and node.schema == model_schema %}
+                {% set graph_model = node %}
+                {{ return(graph_model) }}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    {{ return(graph_model) }}
+{% endmacro %}
+
+{% macro __render_sql_and_replace_references(ns, input_mapping) %}  
+    {% for k,v in input_mapping.items() %}
+        {# render the original sql and replacement key before replacing because v is already rendered when it is passed to this test #}
+        {% set ns.test_sql = render(ns.test_sql)|replace(ns.rendered_keys[k], v) %}
+    {% endfor %}
 {% endmacro %}
