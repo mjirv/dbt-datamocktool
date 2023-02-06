@@ -1,9 +1,9 @@
-{%- macro unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
-    {%- set test_sql = get_unit_test_sql(model, input_mapping, depends_on)|trim -%}
+{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
+    {%- set test_sql = dbt_datamocktool.get_unit_test_sql(model, input_mapping, depends_on)|trim -%}
 
-    {%- set test_report = test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns) -%}
+    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns) -%}
     {%- do return(test_report) -%}
-{%- endmacro -%}
+{%- endtest -%}
 
 
 {%- macro test_equality(model, name, compare_model, compare_columns=None) -%}
@@ -82,10 +82,10 @@ select * from unioned
     {%- set test_report = run_query(tables_compared) -%}
     {#- Print output if there are any rows within the table. -#}
     {%- if test_report.columns[0].values()|length -%}
-        {{ print_color('{YELLOW}The test <' ~ name ~ '> failed with the differences:') }}
-        {{ print_color('{RED}================================================================') }}
+        {{ dbt_datamocktool.print_color('{YELLOW}The test <' ~ name ~ '> failed with the differences:') }}
+        {{ dbt_datamocktool.print_color('{RED}================================================================') }}
         {% do test_report.print_table() %}
-    {{ print_color('{RED}================================================================') }}
+    {{ dbt_datamocktool.print_color('{RED}================================================================') }}
     {%- endif -%}
 
 {{ return(tables_compared) }}
@@ -94,7 +94,7 @@ select * from unioned
 
 
 {% macro print_color(string) %}
-  {% do log(parse_colors(string ~ "{RESET}"), info=true) %}
+  {% do log(dbt_datamocktool.parse_colors(string ~ "{RESET}"), info=true) %}
 {% endmacro %}
 
 {% macro parse_colors(string) %}
