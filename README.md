@@ -20,7 +20,7 @@ and test that the model produces the desired output (using another CSV seed).
 1. Install this package by adding the following to your `packages.yml` file:
    - ```yaml
      - package: mjirv/dbt_datamocktool
-       version: [">=0.2.2"]
+       version: [">=0.3.0"]
      ```
 2. Create your mocks: sample inputs for your models and the expected outputs of those models given the inputs.
    - Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
@@ -157,4 +157,29 @@ models:
           depends_on:
             - ref('raw_customers')
     columns: ...
+```
+
+### Incremental testing
+
+You can test incremental models with the `unit_test_incremental` macro.
+
+Steps:
+
+1. Create a mock input corresponding to the initial state of the table
+2. Use it as `this` in the input mapping
+
+_NOTE: currently only the MERGE strategy is supported, so `unit_test_incremental` can only be used on databases that support it (BigQuery and Snowflake)._
+
+```yaml
+- name: stg_orders
+  tests:
+    - dbt_datamocktool.unit_test:
+        input_mapping:
+          ref('raw_orders'): ref('dmt__raw_orders_1')
+        expected_output: ref('dmt__expected_stg_orders_1')
+    - dbt_datamocktool.unit_test_incremental:
+        input_mapping:
+          ref('raw_orders'): ref('dmt__raw_orders_3')
+          this: ref('dmt__current_state_orders_2')
+        expected_output: ref('dmt__expected_stg_orders_2')
 ```
