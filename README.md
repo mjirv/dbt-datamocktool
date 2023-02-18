@@ -10,7 +10,7 @@ and test that the model produces the desired output (using another CSV seed).
 ## Requirements
 
 - dbt version:
-  - 1.3 or greater for datamocktool>=0.2.1 
+  - 1.3 or greater for datamocktool>=0.2.1
   - 1.0 or greater for datamocktool>=0.1.8
   - 0.19.2 or greater for datamocktool<0.1.8
 - BigQuery, Redshift, Postgres, or SQL Server (likely works on Snowflake but has not been specifically tested)
@@ -20,7 +20,7 @@ and test that the model produces the desired output (using another CSV seed).
 1. Install this package by adding the following to your `packages.yml` file:
    - ```yaml
      - package: mjirv/dbt_datamocktool
-       version: [">=0.1.10"]
+       version: [">=0.2.2"]
      ```
 2. Create your mocks: sample inputs for your models and the expected outputs of those models given the inputs.
    - Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
