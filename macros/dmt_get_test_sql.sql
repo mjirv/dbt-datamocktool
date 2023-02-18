@@ -71,11 +71,11 @@
 
 {% macro _create_mock_table_or_view(model, test_sql) %}
     {{ return(adapter.dispatch('_create_mock_table_or_view', 'dbt_datamocktool')(model, test_sql)) }}
-    {% endmacro %}
+{% endmacro %}
 
 {% macro default___create_mock_table_or_view(model, test_sql) %}
     {% do run_query(create_table_as(True, model, test_sql)) %}
-    {% endmacro %}
+{% endmacro %}
 
 {% macro sqlserver___create_mock_table_or_view(model, test_sql) %}
     {% do run_query(create_view_as(model, test_sql)) %}
