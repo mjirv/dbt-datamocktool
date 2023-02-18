@@ -1,6 +1,6 @@
 {% macro get_unit_test_sql(model, input_mapping, depends_on) %}
     {% set ns=namespace(
-        test_sql="(select 1) raw_sql",
+        test_sql="(select 1) raw_code",
         rendered_keys={},
         graph_model=none
     ) %}
