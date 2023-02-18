@@ -1,3 +1,5 @@
+{{ config(materialized = "incremental") }}
+
 with source as (
 
     {#-
@@ -5,7 +7,9 @@ with source as (
     our data in this project
     #}
     select * from {{ ref('raw_orders') }}
-
+    {% if is_incremental() %}
+        where id > (select max(order_id) from {{ this }})
+    {% endif %}
 ),
 
 renamed as (
