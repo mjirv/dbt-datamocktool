@@ -31,7 +31,9 @@
         {%- set exclude_columns = [] -%}
         {%- for col in all_columns -%}
             {%- set col = col|replace('"',"") -%}
-            {%- if col not in compare_columns|upper -%}
+            {# -- in bigquery columns seem to come quoted with ` #}
+            {%- set col = col|replace('`',"") -%}
+            {%- if col|upper not in compare_columns|upper -%}
                 {%- do exclude_columns.append(col) -%}
             {%- endif -%}
         {%- endfor -%}
