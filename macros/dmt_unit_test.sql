@@ -1,42 +1,44 @@
-{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
+{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, exclude_columns, depends_on) -%}
     {%- set test_sql = dbt_datamocktool.get_unit_test_sql(model, input_mapping, depends_on)|trim -%}
-    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns) -%}
+    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns, exclude_columns=exclude_columns) -%}
     {{ test_report }}
 {%- endtest -%}
 
-{% test unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on) %}
+{% test unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, exclude_columns, depends_on) %}
     {%- set test_sql = dbt_datamocktool.get_unit_test_incremental_sql(model, input_mapping, depends_on)|trim -%}
-    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns) -%}
+    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns, exclude_columns=exclude_columns) -%}
     {{ test_report }}
 {% endtest %}
 
-{%- macro test_equality(model, name, compare_model, compare_columns=None) -%}
+{%- macro test_equality(model, name, compare_model, compare_columns=[], exclude_columns=[]) -%}
 
-    {#-- Prevent querying of db in parsing mode. This works because this macro does not create any new refs. #}
+    -- Prevent querying of db in parsing mode. This works because this macro does not create any new refs.
     {%- if not execute -%}
         {{ return('') }}
     {%- endif -%}
 
-    {#- setup -#}
+    -- Setup
     {%- do dbt_utils._is_relation(model, 'test_equality') -%}
-    {#-
-    If the compare_cols arg is provided, we can run this test without querying the
-    information schema — this allows the model to be an ephemeral model
-    -#}
-    {%- if not compare_columns -%}
-        {%- do dbt_utils._is_ephemeral(model, 'test_equality') -%}
-        {%- set exclude_columns = [] -%}
-    {%- else -%}
+    {%- if compare_columns|length and exclude_columns|length -%}
+        {{ exceptions.raise_compiler_error("You cannot provide both compare_columns and exclude_columns") }}
+    {%- endif -%}
+
+    -- If compare_columns have been provided, we need to query the schema to get the list of columns
+    -- to exclude
+    {%- if compare_columns|length -%}
         {%- set all_columns = adapter.get_columns_in_relation(model) | map(attribute='quoted')  -%}
         {%- set exclude_columns = [] -%}
         {%- for col in all_columns -%}
-            {%- set col = col|replace('"',"") -%}
-            {# -- in bigquery columns seem to come quoted with ` #}
+            -- In bigquery columns seem to come quoted with backticks
             {%- set col = col|replace('`',"") -%}
             {%- if col|upper not in compare_columns|upper -%}
                 {%- do exclude_columns.append(col) -%}
             {%- endif -%}
         {%- endfor -%}
+    {%- else -%}
+        -- If we're comparing all columns, or if we're excluding certain columns, then we don't need
+        -- to query the schema, which means the modal can be an ephermeral model
+        {%- do dbt_utils._is_ephemeral(model, 'test_equality') -%}
     {%- endif -%}
 
     {%- set tables_compared -%}
@@ -48,7 +50,7 @@
     ) }}
     {%- endset -%}
 
-    {#- Run the comparison query -#}
+    -- Run the comparison query
     {%- set test_report = run_query(tables_compared) -%}
     {%- if test_report.columns[0].values()|length -%}
         {%- set test_status = 1 -%}
@@ -56,7 +58,7 @@
         {%- set test_status = 0 -%}
     {%- endif-%}
 
-    {#- Print output if there are any rows within the table. -#}
+    -- Print output if there are any rows within the table.
     {%- if test_status == 1 -%}
         {{ dbt_datamocktool.print_color('{YELLOW}The test <' ~ name ~ '> failed with the differences:') }}
         {{ dbt_datamocktool.print_color('{RED}================================================================') }}
