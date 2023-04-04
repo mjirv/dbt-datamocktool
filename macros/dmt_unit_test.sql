@@ -1,16 +1,16 @@
-{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
+{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on, exclude_columns) -%}
     {%- set test_sql = dbt_datamocktool.get_unit_test_sql(model, input_mapping, depends_on)|trim -%}
-    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns) -%}
+    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns, exclude_columns=exclude_columns) -%}
     {{ test_report }}
 {%- endtest -%}
 
-{% test unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on) %}
+{% test unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on, exclude_columns) %}
     {%- set test_sql = dbt_datamocktool.get_unit_test_incremental_sql(model, input_mapping, depends_on)|trim -%}
-    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns) -%}
+    {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns, exclude_columns=exclude_columns) -%}
     {{ test_report }}
 {% endtest %}
 
-{%- macro test_equality(model, name, compare_model, compare_columns=None) -%}
+{%- macro test_equality(model, name, compare_model, compare_columns=None, exclude_columns=None) -%}
 
     {#-- Prevent querying of db in parsing mode. This works because this macro does not create any new refs. #}
     {%- if not execute -%}
@@ -23,12 +23,14 @@
     If the compare_cols arg is provided, we can run this test without querying the
     information schema — this allows the model to be an ephemeral model
     -#}
+    
+    {%- if not exclude_columns -%}
+        {%- set exclude_columns = [] -%}
+    {%- endif -%}
     {%- if not compare_columns -%}
         {%- do dbt_utils._is_ephemeral(model, 'test_equality') -%}
-        {%- set exclude_columns = [] -%}
     {%- else -%}
         {%- set all_columns = adapter.get_columns_in_relation(model) | map(attribute='quoted')  -%}
-        {%- set exclude_columns = [] -%}
         {%- for col in all_columns -%}
             {%- set col = col|replace('"',"") -%}
             {# -- in bigquery columns seem to come quoted with ` #}
