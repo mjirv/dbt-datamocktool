@@ -143,7 +143,7 @@ models:
 ```
 
 ### Exclude Columns
-If you want to exclude some columns from being tested you cand do so and use the 'exclude_columns' field to tell the test which columns to ignore. like so:
+If you want to exclude some columns from being tested you can do so and use the 'exclude_columns' field to tell the test which columns to ignore. like so:
 
 ```yaml
 models:
