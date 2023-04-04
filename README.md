@@ -142,6 +142,22 @@ models:
     columns: ...
 ```
 
+### Exclude Columns
+If you want to exclude some columns from being tested you cand do so and use the 'exclude_columns' field to tell the test which columns to ignore. like so:
+
+```yaml
+models:
+  - name: stg_customers
+    tests:
+      - dbt_datamocktool.unit_test:
+          input_mapping:
+            source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
+          expected_output: ref('dmt__expected_stg_customers_1')
+          exclude_columns:
+            - last_name
+    columns: ...
+```
+
 ### Manual Dependencies
 
 Sometimes dbt won't pick up all the needed dependencies. You can manually add dependencies using `depends_on`:
