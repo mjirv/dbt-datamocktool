@@ -33,7 +33,7 @@
             {%- set col = col|replace('"',"") -%}
             {# -- in bigquery columns seem to come quoted with ` #}
             {%- set col = col|replace('`',"") -%}
-            {%- if col|upper not in compare_columns|upper -%}
+            {%- if col|upper not in compare_columns|map('upper') -%}
                 {%- do exclude_columns.append(col) -%}
             {%- endif -%}
         {%- endfor -%}
