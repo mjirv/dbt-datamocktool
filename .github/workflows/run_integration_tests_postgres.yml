@@ -24,18 +24,26 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          pwd
-          ls
-          python --version
-          python3 --version
           
       # Install dbt
       - name: Install dbt
         run: pip install dbt-postgres
+      
+      # Set up dbt profiles for test
+      - name: Create profiles.yml
+        run: |
+          echo "jaffle_shop:
+                target: dev
+                outputs:
+                  dev:
+                    type: postgres
+                    host: localhost
+                    user: alice
+                    password: bob
+                    port: 5432
+                    dbname: jaffle_shop
+                    schema: dbt_alice
+                    threads: 1" > profiles.yml
       
       # Runs a single command using the runners shell
       - name: Run integration tests
