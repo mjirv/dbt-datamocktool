@@ -55,7 +55,7 @@ jobs:
                     password: bob
                     port: 5432
                     dbname: postgres
-                    schema: dbt_alice
+                    schema: jaffle_shop
                     threads: 1" > ./integration_tests/profiles.yml
       
       # Runs a single command using the runners shell
