@@ -49,4 +49,4 @@ jobs:
       - name: Run integration tests
         run: | 
           cd integration_tests 
-          run_integration_tests.sh
+          ./run_integration_tests.sh
