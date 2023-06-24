@@ -54,7 +54,7 @@ jobs:
                     user: alice
                     password: bob
                     port: 5432
-                    dbname: jaffle_shop
+                    dbname: postgres
                     schema: dbt_alice
                     threads: 1" > ./integration_tests/profiles.yml
       
