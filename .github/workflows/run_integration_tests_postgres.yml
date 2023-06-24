@@ -32,7 +32,7 @@ jobs:
       # Set up dbt profiles for test
       - name: Create profiles.yml
         run: |
-          echo "jaffle_shop:
+          echo "datamocktool:
                 target: dev
                 outputs:
                   dev:
