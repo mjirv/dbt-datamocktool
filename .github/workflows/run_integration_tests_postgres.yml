@@ -43,8 +43,10 @@ jobs:
                     port: 5432
                     dbname: jaffle_shop
                     schema: dbt_alice
-                    threads: 1" > profiles.yml
+                    threads: 1" > ./integration_tests/profiles.yml
       
       # Runs a single command using the runners shell
       - name: Run integration tests
-        run: ./integration_tests/run_integration_tests.sh
+        run: | 
+          cd integration_tests 
+          run_integration_tests.sh
