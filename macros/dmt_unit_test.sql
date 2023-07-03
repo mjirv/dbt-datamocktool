@@ -1,17 +1,26 @@
-{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
+{%- macro unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
     {%- set test_sql = dbt_datamocktool.get_unit_test_sql(model, input_mapping, depends_on)|trim -%}
     {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns) -%}
     {{ test_report }}
+{%- endmacro -%}
+
+{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
+    {{ dbt_datamocktool.unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) }}
 {%- endtest -%}
 
-{% test unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on) %}
+
+{%- macro unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
     {%- set test_sql = dbt_datamocktool.get_unit_test_incremental_sql(model, input_mapping, depends_on)|trim -%}
     {%- set test_report = dbt_datamocktool.test_equality(expected_output, name, compare_model=test_sql, compare_columns=compare_columns) -%}
     {{ test_report }}
+{%- endmacro -%}
+
+{% test unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on) %}
+    {{ dbt_datamocktool.unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on) }}
 {% endtest %}
 
-{%- macro test_equality(model, name, compare_model, compare_columns=None) -%}
 
+{%- macro test_equality(model, name, compare_model, compare_columns=None) -%}
     {#-- Prevent querying of db in parsing mode. This works because this macro does not create any new refs. #}
     {%- if not execute -%}
         {{ return('') }}
