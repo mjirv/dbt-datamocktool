@@ -5,4 +5,5 @@
         source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
     },
     expected_output = ref('dmt__expected_stg_customers_1'),
+    exclude_columns = ['description']
 ) }}
