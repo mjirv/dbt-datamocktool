@@ -4,8 +4,8 @@
     {{ test_report }}
 {%- endmacro -%}
 
-{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) -%}
-     {{ dbt_datamocktool.unit_test(model, input_mapping, expected_output, name, description, compare_columns, depends_on) }}
+{%- test unit_test(model, input_mapping, expected_output, name, description, compare_columns, exclude_columns, depends_on) -%}
+     {{ dbt_datamocktool.unit_test(model, input_mapping, expected_output, name, description, compare_columns, exclude_columns, depends_on) }}
  {%- endtest -%}
 
 {% macro unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, exclude_columns, depends_on) %}
@@ -14,8 +14,8 @@
     {{ test_report }}
 {% endmacro %}
 
-{% test unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on) %}
-     {{ dbt_datamocktool.unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, depends_on) }}
+{% test unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, exclude_columns, depends_on) %}
+     {{ dbt_datamocktool.unit_test_incremental(model, input_mapping, expected_output, name, description, compare_columns, exclude_columns, depends_on) }}
  {% endtest %}
 
 {%- macro test_equality(model, name, compare_model, compare_columns=[], exclude_columns=[]) -%}
