@@ -124,7 +124,7 @@ will show up in your test run as follows:
 21:37:49 | 4 of 23 PASS dbt_datamocktool_unit_test_stg_customers_This_test_is_a_unit_test__ref_dmt__expected_stg_customers_2____dmt_raw_customers___Raw_Customers_2 [PASS in 0.27s]
 ```
 
-### Compare Columns
+### Include/exclude columns
 
 If you only want to mock a few columns, you can do so and use the `compare_columns` field to tell the test which columns to look at, like so:
 
@@ -139,7 +139,20 @@ models:
           compare_columns:
             - first_name
             - last_name
-    columns: ...
+```
+
+Alternatively, if you want to compare all columns apart from a few, you can use the `exclude_columns` field:
+
+```yaml
+models:
+  - name: stg_customers
+    tests:
+      - dbt_datamocktool.unit_test:
+          input_mapping:
+            source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
+          expected_output: ref('dmt__expected_stg_customers_1')
+          exclude_columns:
+            - description
 ```
 
 ### Manual Dependencies

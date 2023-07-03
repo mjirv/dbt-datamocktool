@@ -12,6 +12,16 @@ models:
           input_mapping:
             source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1') # this is a seed
           expected_output: ref('dmt__expected_stg_customers_1') # this is also a seed
+          compare_columns:
+            - customer_id
+            - first_name
+            - last_name
+      - dbt_datamocktool.unit_test:
+          input_mapping:
+            source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1') # this is a seed
+          expected_output: ref('dmt__expected_stg_customers_1') # this is also a seed
+          exclude_columns: # exactly the same test as above
+            - description
       - dbt_datamocktool.unit_test:
           input_mapping:
             source('jaffle_shop', 'raw_customers'): "{{ dmt_raw_customers() }}" # this is a macro

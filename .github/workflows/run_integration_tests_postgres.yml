@@ -1,0 +1,62 @@
+name: Run integration tests with postgres
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: alice
+          POSTGRES_PASSWORD: bob
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+          
+      # Install dbt
+      - name: Install dbt with postgres adapter
+        run: pip install dbt-postgres==1.5.2
+      
+      # Set up dbt profiles for test
+      - name: Create profiles.yml
+        run: |
+          echo "datamocktool:
+                target: dev
+                outputs:
+                  dev:
+                    type: postgres
+                    host: localhost
+                    user: alice
+                    password: bob
+                    port: 5432
+                    dbname: postgres
+                    schema: jaffle_shop
+                    threads: 1" > ./integration_tests/profiles.yml
+      
+      - name: Run integration tests
+        run: | 
+          cd integration_tests 
+          ./run_integration_tests.sh

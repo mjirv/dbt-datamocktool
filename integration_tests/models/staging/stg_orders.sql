@@ -1,4 +1,4 @@
-{{ config(materialized = "incremental") }}
+{{ config(materialized = "incremental", unique_key='order_id') }}
 
 with source as (
 
@@ -8,7 +8,7 @@ with source as (
     #}
     select * from {{ ref('raw_orders') }}
     {% if is_incremental() %}
-        where id > (select max(order_id) from {{ this }})
+        where id > (select max(order_id) from {{ this }}) or id = 2
     {% endif %}
 ),
 
