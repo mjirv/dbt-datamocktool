@@ -5,7 +5,7 @@
         graph_model=none
     ) %}
 
-    {% do dbt_datamocktool.__set_rendered_mappings(ns, input_mapping.keys()) %}
+    {% do dbt_datamocktool.__set_rendered_mappings(ns, input_mapping) %}
 
     {% if execute %}
         {# inside an execute block because graph nodes aren't well-defined during parsing #}
@@ -38,7 +38,7 @@
     ) %}
 
     {# doing this outside the execute block allows dbt to infer the proper dependencies #}
-    {% do dbt_datamocktool.__set_rendered_mappings(ns, input_mapping.keys()) %}
+    {% do dbt_datamocktool.__set_rendered_mappings(ns, input_mapping) %}
 
     {% if execute %}
         {# inside an execute block because graph nodes aren't well-defined during parsing #}
