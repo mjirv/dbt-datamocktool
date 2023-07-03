@@ -1,19 +1,20 @@
 {% macro get_unit_test_sql(model, input_mapping, depends_on) %}
     {% set ns=namespace(
         test_sql="(select 1) raw_code",
-        rendered_keys={},
+        rendered_mappings={},
         graph_model=none
     ) %}
 
-    {% do dbt_datamocktool.__set_rendered_keys(ns, input_mapping.keys()) %}
+    {% do dbt_datamocktool.__set_rendered_mappings(ns, input_mapping) %}
 
     {% if execute %}
         {# inside an execute block because graph nodes aren't well-defined during parsing #}
         {% set ns.graph_model = dbt_datamocktool.__get_graph_model(project_name, model.schema, model.name) %}
         {% set ns.test_sql = ns.graph_model.raw_code %}
-
+        
         {% do dbt_datamocktool.__render_sql_and_replace_references(ns, input_mapping) %}
 
+        {# mock_model_relation is the mocked model name #}
         {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(
             model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))
         ) %}
@@ -32,12 +33,12 @@
 {% macro get_unit_test_incremental_sql(model, input_mapping, depends_on) %}
     {% set ns=namespace(
         test_sql="(select 1) raw_code",
-        rendered_keys={},
+        rendered_mappings={},
         graph_model=none
     ) %}
 
     {# doing this outside the execute block allows dbt to infer the proper dependencies #}
-    {% do dbt_datamocktool.__set_rendered_keys(ns, input_mapping.keys()) %}
+    {% do dbt_datamocktool.__set_rendered_mappings(ns, input_mapping) %}
 
     {% if execute %}
         {# inside an execute block because graph nodes aren't well-defined during parsing #}
@@ -55,7 +56,6 @@
         {% set ns.test_sql = ns.test_sql|replace(this.dataset, model.dataset) %}     
         {% set ns.test_sql = ns.test_sql|replace(this.table, input_mapping.this) %}     
         
-        {# mock_model_relation is the mocked model name #}
         {% set mock_model_relation = dbt_datamocktool._get_model_to_mock(
             model, suffix=('_dmt_' ~ modules.datetime.datetime.now().strftime("%S%f"))
         ) %}
@@ -124,9 +124,9 @@
     {% do run_query(get_merge_sql(model, test_sql, dest_columns=dest_columns, unique_key=unique_key)) %}
 {% endmacro %}
 
-{% macro __set_rendered_keys(ns, keys) %}  
-    {% for k in keys %}
-        {% do ns.rendered_keys.update({k: render("{{ " + k + " }}")}) %}
+{% macro __set_rendered_mappings(ns, input_mapping) %}
+    {% for k, v in input_mapping.items() %}
+        {% do ns.rendered_mappings.update({k: render(v)}) %}    
     {% endfor %}
 {% endmacro %}
 
@@ -144,9 +144,20 @@
     {{ return(graph_model) }}
 {% endmacro %}
 
-{% macro __render_sql_and_replace_references(ns, input_mapping) %}  
-    {% for k,v in input_mapping.items() %}
-        {# render the original sql and replacement key before replacing because v is already rendered when it is passed to this test #}
-        {% set ns.test_sql = render(ns.test_sql)|replace(ns.rendered_keys[k], v) %}
+{% macro __render_sql_and_replace_references(ns, input_mapping) %}
+    {#- Replace the keys first, before the sql code is rendered -#}
+    {% for k, v in ns.rendered_mappings.items() %}
+        {% set ns.test_sql = ns.test_sql|replace("{{ "~render(k)~" }}", v) %}
+    {% endfor %}
+
+    {#- Render the original sql after all reference values are set according to the provided input
+    mapping. -#}
+    {% set ns.test_sql = render(ns.test_sql) %}
+
+    {#- Replace left over rendered keys with their reference values. This is only necessary, if the
+    unit test is defined within a macro, since then the input mapping is already rendered within
+    the macro itself.-#}
+    {% for k, v in ns.rendered_mappings.items() %}
+        {% set ns.test_sql = ns.test_sql|replace(k, v) %}
     {% endfor %}
 {% endmacro %}

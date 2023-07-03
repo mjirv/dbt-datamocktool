@@ -20,7 +20,7 @@ and test that the model produces the desired output (using another CSV seed).
 1. Install this package by adding the following to your `packages.yml` file:
    - ```yaml
      - package: mjirv/dbt_datamocktool
-       version: [">=0.3.0"]
+       version: [">=0.3.2"]
      ```
 2. Create your mocks: sample inputs for your models and the expected outputs of those models given the inputs.
    - Save them to your seeds directory (usually `data/`; note that you can use any folder structure you would like within that directory)
@@ -196,3 +196,38 @@ _NOTE: currently only the MERGE strategy is supported, so `unit_test_incremental
           this: ref('dmt__current_state_orders_2')
         expected_output: ref('dmt__expected_stg_orders_2')
 ```
+
+### Set the unit tests as macros
+
+The unit tests can also be defined inside macros. This yields the disadvantage that not all the tests are defined at the same place, i.e. the yml file of the model. However, this allows to easlily run a specific unit test and enables easier selection criterias if the tests are for example run within a ci/cd pipeline, since all the tests can be excluded or included via their folder path within tests/.
+
+To set a new test, a file has to be created within the tests/ folder like that:
+
+```sql
+{{ dbt_datamocktool.unit_test(
+    model = ref('stg_customers'),
+    input_mapping = {
+        source('jaffle_shop', 'raw_customers'): ref('dmt__raw_customers_1')
+    },
+    expected_output = ref('dmt__expected_stg_customers_1'),
+) }}
+```
+
+To make use of the other configuration possibilities, like inlcuding only specific columns, they can be simply added the same then in the yml files. If a specification consists out of multiple items, it has to explicitly be setup as a dictionary. Does one key contain multiple calues, it has to be added as a list. A complete example would look like that:
+
+```sql
+{{ dbt_datamocktool.unit_test(
+  model = ref('<model_to_test>'),
+  input_mapping = {
+        ref('<input_one>'): ref('<replacement_one>'),
+        ref('<input_two>'): ref('<replacement_two>')
+    },
+    expected_output = ref('<expected_output>'),
+    name = '<Name of the unit test>',
+    description = '<Description of the unit test>',
+    compare_columns = ['<col_one>', '<col_two>'],
+    depends_on = [ref('<dependency_one>'), ref('<dependency_two>')],
+)}}
+```
+
+Up to this moment, not multiple tests can defined per file. It can be only one test macro per file.
