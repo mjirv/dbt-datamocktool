@@ -64,9 +64,10 @@
         {{ log("copying base table", info=True) }}
         {% do dbt_datamocktool._create_mock_table_or_view(mock_model_relation, "select * from " ~ input_mapping.this) %}
         
+        {% set unique_key=ns.graph_model.config.unique_key or none %}
         {# mock merge statement#}
         {# need sql to be wrapped in parentheses  - see bq_generate_incremental_build_sql #}
-        {% do dbt_datamocktool._create_mock_merge_table(mock_model_relation, "(" + ns.test_sql + ")", dest_columns=adapter.get_columns_in_relation(mock_model_relation)) %}
+        {% do dbt_datamocktool._create_mock_merge_table(mock_model_relation, "(" + ns.test_sql + ")", dest_columns=adapter.get_columns_in_relation(mock_model_relation), unique_key=unique_key) %}
 
     {% endif %}
     {% for k in depends_on %}
@@ -115,12 +116,12 @@
     {% do run_query(create_view_as(model, test_sql)) %}
 {% endmacro %}
 
-{% macro _create_mock_merge_table(model, test_sql, dest_columns) %}
-    {{ return(adapter.dispatch('_create_mock_merge_table', 'dbt_datamocktool')(model, test_sql, dest_columns)) }}
+{% macro _create_mock_merge_table(model, test_sql, dest_columns, unique_key) %}
+    {{ return(adapter.dispatch('_create_mock_merge_table', 'dbt_datamocktool')(model, test_sql, dest_columns, unique_key)) }}
 {% endmacro %}
 
-{% macro default___create_mock_merge_table(model, test_sql, dest_columns) %}
-    {% do run_query(get_merge_sql(model, test_sql, dest_columns=dest_columns)) %}
+{% macro default___create_mock_merge_table(model, test_sql, dest_columns, unique_key) %}
+    {% do run_query(get_merge_sql(model, test_sql, dest_columns=dest_columns, unique_key=unique_key)) %}
 {% endmacro %}
 
 {% macro __set_rendered_keys(ns, keys) %}  
