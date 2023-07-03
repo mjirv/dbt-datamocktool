@@ -29,7 +29,9 @@
         {%- set all_columns = adapter.get_columns_in_relation(model) | map(attribute='quoted')  -%}
         {%- set exclude_columns = [] -%}
         {%- for col in all_columns -%}
-            -- In bigquery columns seem to come quoted with backticks
+            -- In postgres columns come quoted with "
+            {%- set col = col|replace('"',"") -%}
+            -- In Bigquery columns come quoted with backticks
             {%- set col = col|replace('`',"") -%}
             {%- if col|upper not in compare_columns|map('upper') -%}
                 {%- do exclude_columns.append(col) -%}
