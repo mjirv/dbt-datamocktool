@@ -13,7 +13,7 @@
 {%- macro test_equality(model, name, compare_model, compare_columns=None, exclude_columns=None) -%}
 
     {#-- Prevent querying of db in parsing mode. This works because this macro does not create any new refs. #}
-    {%- if not execute -%}
+    {%- if not execute or flags.WHICH == 'compile' -%}
         {{ return('') }}
     {%- endif -%}
 
