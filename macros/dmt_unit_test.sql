@@ -71,8 +71,8 @@
 
     {%- set tables_compared -%}
     {{ audit_helper.compare_queries(
-        a_relation = model_query,
-        b_relation = compare_model_query,
+        a_query = model_query,
+        b_query = compare_model_query,
         summarize = False
     ) }}
     {%- endset -%}
