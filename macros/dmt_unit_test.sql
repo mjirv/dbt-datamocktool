@@ -60,13 +60,13 @@
     {% set model_query %}
       SELECT 
         {{ cols|join(", ") }}
-      FROM model
+      FROM {{ model }}
     {% endset %}
 
     {% set compare_model_query %}
       SELECT 
         {{ cols|join(", ") }}
-      FROM compare_model
+      FROM {{ compare_model }}
     {% endset %}
 
     {%- set tables_compared -%}
