@@ -41,11 +41,38 @@
         {%- endfor -%}
     {%- endif -%}
 
+    {% set all_columns = adapter.get_columns_in_relation(model) %}
+    {% set except = exclude_columns | map("lower") | list %}
+
+    {% set cols = [] %}
+    {% for col in all_columns %}  
+        {% if col.column|lower not in except %} 
+            {% if 'STRUCT' in col.data_type or 'ARRAY' in col.data_type %}  
+                {% set _ = cols.append("TO_JSON_STRING(" + col.name + ") as " + col.name) %}
+            {% elif 'FLOAT' in col.data_type %}
+                {% set _ = cols.append("ROUND(" + col.name + ", 3) as " + col.name) %}
+            {% else %}
+                {% set _ = cols.append(col.name) %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+    {% set model_query %}
+      SELECT 
+        {{ cols|join(", ") }}
+      FROM model
+    {% endset %}
+
+    {% set compare_model_query %}
+      SELECT 
+        {{ cols|join(", ") }}
+      FROM compare_model
+    {% endset %}
+
     {%- set tables_compared -%}
-    {{ audit_helper.compare_relations(
-        a_relation = model,
-        b_relation = compare_model,
-        exclude_columns = exclude_columns,
+    {{ audit_helper.compare_queries(
+        a_relation = model_query,
+        b_relation = compare_model_query,
         summarize = False
     ) }}
     {%- endset -%}
